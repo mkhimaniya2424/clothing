@@ -24,6 +24,8 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+    z-index: 1000;
 }
 header a.logo {
     color: #fff;
@@ -86,4 +88,33 @@ footer a:hover {
 }
 .dropdown-menu a:hover {
     background: #f1f1f1;
+}
+
+/* ======= FIX DROPDOWN NOT SHOWING ======= */
+
+/* Remove small Bootstrap arrow */
+.header-actions .dropdown-toggle::after {
+    display: none;
+}
+
+/* Position dropdown correctly */
+.header-actions .dropdown-menu {
+    margin-top: 10px !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 9999 !important;
+    display: block;
+
+    /* Show/Hide animation */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease-in-out;
+}
+
+/* When dropdown is open */
+.header-actions .dropdown.show .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
