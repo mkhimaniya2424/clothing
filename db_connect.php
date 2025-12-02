@@ -58,6 +58,50 @@ $create_admin_table = "CREATE TABLE IF NOT EXISTS admin (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )";
 
+$create_categories_table = "CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image VARCHAR(255),
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+
+$create_products_table = "CREATE TABLE IF NOT EXISTS products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    image VARCHAR(255),
+    stock INT DEFAULT 0,
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+)";
+
+$create_orders_table = "CREATE TABLE IF NOT EXISTS orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    total_amount DECIMAL(10,2) NOT NULL,
+    payment_method VARCHAR(50),
+    payment_status ENUM('pending','completed','failed') DEFAULT 'pending',
+    order_status ENUM('pending','processing','shipped','delivered','cancelled') DEFAULT 'pending',
+    shipping_address TEXT,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+)";
+
+$create_order_items_table = "CREATE TABLE IF NOT EXISTS order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
+)";
+
 // Execute table creation
 if (isset($_GET['setup_db'])) {
     if (mysqli_query($con, $create_users_table)) {
@@ -86,5 +130,17 @@ if (isset($_GET['setup_db'])) {
     } else {
         echo "❌ Error creating 'admin' table: " . mysqli_error($con) . "<br>";
     }
+
+    if (mysqli_query($con, $create_categories_table)) echo "✅ Table 'categories' created/checked successfully.<br>";
+    else echo "❌ Error creating 'categories' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_products_table)) echo "✅ Table 'products' created/checked successfully.<br>";
+    else echo "❌ Error creating 'products' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_orders_table)) echo "✅ Table 'orders' created/checked successfully.<br>";
+    else echo "❌ Error creating 'orders' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_order_items_table)) echo "✅ Table 'order_items' created/checked successfully.<br>";
+    else echo "❌ Error creating 'order_items' table: " . mysqli_error($con) . "<br>";
 }
 ?>
