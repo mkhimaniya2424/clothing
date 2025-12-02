@@ -53,8 +53,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($title === '') $msg = "Title is required.";
     else {
-        $stmt = $con->prepare("UPDATE products SET title=?, price=?, category_main=?, category_sub=?, category_type=?, category_brand=?, sizes=?, fabric=?, highlight=?, description=?, status=? WHERE id=?");
-        $stmt->bind_param("sdsssssssssi", $title, $price, $category_main, $category_sub, $category_type, $category_brand, $sizes, $fabric, $highlight, $description, $status, $id);
+        // Handle Images
+        $currentImages = json_decode($product['images'], true) ?? [];
+        $updatedImages = [];
+
+        // 1. Keep existing images that are NOT marked for deletion
+        if (isset($_POST['keep_images'])) {
+            foreach ($currentImages as $img) {
+                if (in_array($img, $_POST['keep_images'])) {
+                    $updatedImages[] = $img;
+                } else {
+                    // Optional: Delete file from server if you want to clean up
+                    // if (file_exists(__DIR__ . '/' . $img)) unlink(__DIR__ . '/' . $img);
+                }
+            }
+        }
+
+        // 2. Upload new images
+        $uploadDir = __DIR__ . '/images/product/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+        if (!empty($_FILES['new_images']['name'][0])) {
+            foreach ($_FILES['new_images']['name'] as $i => $name) {
+                if ($_FILES['new_images']['error'][$i] === UPLOAD_ERR_OK) {
+                    $ext = pathinfo($name, PATHINFO_EXTENSION);
+                    $safe = time() . "_" . bin2hex(random_bytes(5)) . "." . strtolower($ext);
+                    if (move_uploaded_file($_FILES['new_images']['tmp_name'][$i], $uploadDir . $safe)) {
+                        $updatedImages[] = "images/product/" . $safe;
+                    }
+                }
+            }
+        }
+
+        $images_json = json_encode(array_values($updatedImages)); // Re-index array
+
+        $stmt = $con->prepare("UPDATE products SET title=?, price=?, category_main=?, category_sub=?, category_type=?, category_brand=?, sizes=?, fabric=?, highlight=?, description=?, status=?, images=? WHERE id=?");
+        $stmt->bind_param("sdssssssssssi", $title, $price, $category_main, $category_sub, $category_type, $category_brand, $sizes, $fabric, $highlight, $description, $status, $images_json, $id);
         
         if ($stmt->execute()) {
             // Update Stock
@@ -77,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="alert alert-info"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <form method="post" class="card p-4 shadow-sm">
+    <form method="post" class="card p-4 shadow-sm" enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label class="form-label">Title</label>
@@ -154,6 +188,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea name="description" class="form-control"><?= htmlspecialchars($product['description']) ?></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Current Images</label>
+            <div class="d-flex flex-wrap gap-3">
+                <?php 
+                $imgs = json_decode($product['images'], true) ?? [];
+                if ($imgs): 
+                    foreach($imgs as $im): 
+                ?>
+                    <div class="card p-2" style="width: 120px;">
+                        <img src="<?= $im ?>" class="card-img-top" style="height: 100px; object-fit: cover;">
+                        <div class="card-body p-1 text-center">
+                            <div class="form-check form-switch d-flex justify-content-center">
+                                <input class="form-check-input" type="checkbox" name="keep_images[]" value="<?= $im ?>" checked title="Uncheck to delete">
+                            </div>
+                            <small class="text-muted">Keep</small>
+                        </div>
+                    </div>
+                <?php 
+                    endforeach; 
+                else: 
+                    echo "<p class='text-muted'>No images uploaded.</p>";
+                endif; 
+                ?>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Add New Images</label>
+            <input type="file" name="new_images[]" multiple class="form-control">
         </div>
 
         <div class="mb-3">
