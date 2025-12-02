@@ -129,9 +129,23 @@ if ($res) {
 <div class="header">
     <div class="d-flex align-items-center">
 
-        <!-- Notifications (Badge disabled but icon stays) -->
+        <!-- Notifications -->
         <a href="admin_notification.php" class="me-3 position-relative text-dark">
             <i class="fa fa-bell fs-5"></i>
+            <?php
+            // Count low stock notifications
+            $stockNotifCount = 0;
+            $stockRes = $con->query("SELECT COUNT(*) as cnt FROM product_stock WHERE stock <= 0");
+            if ($stockRes) {
+                $stockNotifCount = $stockRes->fetch_assoc()['cnt'];
+            }
+            
+            if ($stockNotifCount > 0): 
+            ?>
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle rounded-pill">
+                    <?= $stockNotifCount ?>
+                </span>
+            <?php endif; ?>
         </a>
 
         <!-- Messages -->

@@ -1,20 +1,24 @@
 <?php
 ob_start();
-
-// Load products from JSON
-$productsFile = __DIR__ . '/cloapi/products.json';
-$products = json_decode(file_get_contents($productsFile), true) ?: [];
+include_once("db_connect.php");
 
 // Prepare notifications array
 $notifications = [];
 
 // Check for out-of-stock products
-foreach($products as $p) {
-    if(($p['stock'] ?? 0) <= 0) {
+$sql = "
+    SELECT p.id, p.title, ps.stock 
+    FROM products p 
+    JOIN product_stock ps ON p.id = ps.product_id 
+    WHERE ps.stock <= 0
+";
+$res = $con->query($sql);
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
         $notifications[] = [
             'type' => 'Stock Alert',
-            'message' => "Product '{$p['title']}' is out of stock!",
-            'id' => $p['id']
+            'message' => "Product '{$row['title']}' is out of stock!",
+            'id' => $row['id']
         ];
     }
 }
@@ -33,7 +37,7 @@ $notificationCount = count($notifications);
                     <div>
                         <strong><?= htmlspecialchars($note['type']) ?>:</strong> <?= htmlspecialchars($note['message']) ?>
                     </div>
-                    <a href="edit-products.php?id=<?= $note['id'] ?>" class="btn btn-sm btn-warning">View</a>
+                    <a href="admin_edit-product.php?id=<?= $note['id'] ?>" class="btn btn-sm btn-warning">View</a>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -44,5 +48,5 @@ $notificationCount = count($notifications);
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php"); // Use your main layout
+include_once("admin_layout.php"); // Use your main layout
 ?>
