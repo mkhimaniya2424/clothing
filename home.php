@@ -9,30 +9,29 @@ $title_page = "Home";
         <div class="carousel-inner">
             <?php
             $heroSlides = [
-                ["img"=>"https://source.unsplash.com/1600x600/?fashion,women","title"=>"New Season, New Style","desc"=>"Discover the latest trends for Women’s Wear","btnText"=>"Shop Now","btnLink"=>"shop.php"],
-                ["img"=>"https://source.unsplash.com/1600x600/?clothes,shopping","title"=>"Flat 40% Off","desc"=>"Grab exclusive discounts on top brands","btnText"=>"Grab Offer","btnLink"=>"offers.php"],
-                ["img"=>"https://source.unsplash.com/1600x600/?style,women","title"=>"Luxury Meets Comfort","desc"=>"Explore premium women's wear collections","btnText"=>"Explore","btnLink"=>"shop.php"]
+                "images/slider/slider1.jpg",
+                "images/slider/slider2.jpg",
+                // "images/slider/slider3.jpg"
             ];
-            foreach($heroSlides as $i => $slide):
+
+            foreach($heroSlides as $i => $img):
             ?>
-            <div class="carousel-item <?= $i===0?'active':'' ?>">
-                <img src="<?= $slide['img'] ?>" class="d-block w-100" alt="<?= htmlspecialchars($slide['title']) ?>">
-                <div class="carousel-caption d-none d-md-block text-start">
-                    <h1 class="fw-bold text-white"><?= $slide['title'] ?></h1>
-                    <p><?= $slide['desc'] ?></p>
-                    <a href="<?= $slide['btnLink'] ?>" class="btn btn-light btn-lg"><?= $slide['btnText'] ?></a>
-                </div>
+            <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
+                <img src="<?= $img ?>" class="d-block w-100" alt="Slider Image">
             </div>
             <?php endforeach; ?>
         </div>
+
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon"></span>
         </button>
+
         <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon"></span>
         </button>
     </div>
 </section>
+
 
 <!-- ================= FEATURED COLLECTIONS ================= -->
 <section class="container py-5">
