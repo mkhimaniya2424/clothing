@@ -50,6 +50,14 @@ $create_address_table = "CREATE TABLE IF NOT EXISTS user_address (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )";
 
+$create_admin_table = "CREATE TABLE IF NOT EXISTS admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+
 // Execute table creation
 if (isset($_GET['setup_db'])) {
     if (mysqli_query($con, $create_users_table)) {
@@ -62,6 +70,21 @@ if (isset($_GET['setup_db'])) {
         echo "✅ Table 'user_address' created/checked successfully.<br>";
     } else {
         echo "❌ Error creating 'user_address' table: " . mysqli_error($con) . "<br>";
+    }
+
+    if (mysqli_query($con, $create_admin_table)) {
+        echo "✅ Table 'admin' created/checked successfully.<br>";
+        
+        // Insert default admin if not exists (password: admin123)
+        // Hash: *SHA1(SHA1(password))
+        $admin_pass = "*" . strtoupper(sha1(sha1("admin123", true)));
+        $check_admin = mysqli_query($con, "SELECT * FROM admin WHERE username='admin'");
+        if (mysqli_num_rows($check_admin) == 0) {
+            mysqli_query($con, "INSERT INTO admin (username, password, full_name) VALUES ('admin', '$admin_pass', 'Super Admin')");
+            echo "✅ Default admin user created (User: admin, Pass: admin123)<br>";
+        }
+    } else {
+        echo "❌ Error creating 'admin' table: " . mysqli_error($con) . "<br>";
     }
 }
 ?>
