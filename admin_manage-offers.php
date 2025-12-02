@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once __DIR__ . '/../db/db_connect.php';
+require_once 'db_connect.php';
 $msg = '';
 
 // Handle AJAX insert (if form submitted via modal)
@@ -139,5 +139,5 @@ document.querySelectorAll('.editOfferBtn').forEach(btn => {
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>

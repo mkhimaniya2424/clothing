@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once __DIR__ . 'db_connect.php';
+require_once 'db_connect.php';
 
 /* -------------------------
    AUTO-CREATE Main Categories
@@ -196,5 +196,5 @@ $mainCats = array_filter($cats, fn($c) => $c['parent_id'] === NULL);
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>

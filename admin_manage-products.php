@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once __DIR__ . '/../db/db_connect.php';
+require_once 'db_connect.php';
 
 /* ---------------- FETCH PRODUCTS ---------------- */
 $res = $con->query("
@@ -29,7 +29,8 @@ foreach ($categories as $c) {
 }
 
 /* ---------------- UPLOAD FOLDER ---------------- */
-$uploadDir = __DIR__ . '/../final/images/product/';
+// Adjusted path to match project structure
+$uploadDir = __DIR__ . '/images/product/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
 /* ---------------- ADD PRODUCT ---------------- */
@@ -61,9 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ext = pathinfo($name, PATHINFO_EXTENSION);
                     $safe = time() . "_" . bin2hex(random_bytes(5)) . "." . strtolower($ext);
                     if(move_uploaded_file($_FILES['images']['tmp_name'][$i], $uploadDir.$safe)){
-                        $savedImages[] = "final/images/product/".$safe;
+                        // Store relative path for DB
+                        $savedImages[] = "images/product/".$safe;
+                    } else {
+                        $msg .= " Failed to upload " . $name . ". Error code: " . $_FILES['images']['error'][$i] . ". Path: " . $uploadDir.$safe;
                     }
                 }
+            }
+            if (empty($savedImages) && !empty($_FILES['images']['name'][0])) {
+                $msg .= " No images were saved. Check directory permissions for " . $uploadDir;
             }
             $images_json = json_encode($savedImages);
 
@@ -111,7 +118,7 @@ if(isset($_GET['toggle_id'])){
     if($row){
         $newStatus = ($row['status']==='active')?'disabled':'active';
         $con->query("UPDATE products SET status='$newStatus' WHERE id=$pid");
-        header("Location: manage-products.php");
+        header("Location: admin_manage-products.php");
         exit;
     }
 }
@@ -119,7 +126,7 @@ if(isset($_GET['delete_id'])){
     $pid = intval($_GET['delete_id']);
     $con->query("DELETE FROM products WHERE id=$pid");
     $con->query("DELETE FROM product_stock WHERE product_id=$pid");
-    header("Location: manage-products.php");
+    header("Location: admin_manage-products.php");
     exit;
 }
 ?>
@@ -166,7 +173,7 @@ if(isset($_GET['delete_id'])){
                     $imgs = json_decode($row['images'],true);
                     if($imgs){
                         foreach($imgs as $im){
-                            echo "<img src='../$im' width='45' class='me-1 mb-1'>";
+                            echo "<img src='$im' width='45' class='me-1 mb-1'>";
                         }
                     }
                     ?>
@@ -176,7 +183,7 @@ if(isset($_GET['delete_id'])){
                         <button class="btn btn-sm btn-dark dropdown-toggle" data-bs-toggle="dropdown">Manage</button>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#viewModal<?= $row['id'] ?>">👁 View</a></li>
-                            <li><a class="dropdown-item" href="edit-product.php?id=<?= $row['id'] ?>">✏ Edit</a></li>
+                            <li><a class="dropdown-item" href="admin_edit-product.php?id=<?= $row['id'] ?>">✏ Edit</a></li>
                             <li><a class="dropdown-item text-danger" href="?delete_id=<?= $row['id'] ?>" onclick="return confirm('Delete product?');">🗑 Delete</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <?php if($status==='active'): ?>
@@ -205,7 +212,7 @@ if(isset($_GET['delete_id'])){
                             <p><strong>Images:</strong></p>
                             <div class="d-flex flex-wrap">
                             <?php if($imgs): foreach($imgs as $im): ?>
-                                <img src="../<?= $im ?>" width="100" class="me-2 mb-2 img-thumbnail">
+                                <img src="<?= $im ?>" width="100" class="me-2 mb-2 img-thumbnail">
                             <?php endforeach; endif; ?>
                           </div>
                           </div>
@@ -274,5 +281,5 @@ if(isset($_GET['delete_id'])){
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>

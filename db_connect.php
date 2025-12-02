@@ -102,6 +102,30 @@ $create_order_items_table = "CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
 )";
 
+$create_brands_table = "CREATE TABLE IF NOT EXISTS brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+
+$create_product_stock_table = "CREATE TABLE IF NOT EXISTS product_stock (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT UNIQUE,
+    stock INT DEFAULT 0,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+)";
+
+$create_offers_table = "CREATE TABLE IF NOT EXISTS offers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    discount_percentage DECIMAL(5,2) NOT NULL,
+    start_date DATE,
+    end_date DATE,
+    status ENUM('active','disabled') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)";
+
 // Execute table creation
 if (isset($_GET['setup_db'])) {
     if (mysqli_query($con, $create_users_table)) {
@@ -142,5 +166,14 @@ if (isset($_GET['setup_db'])) {
 
     if (mysqli_query($con, $create_order_items_table)) echo "✅ Table 'order_items' created/checked successfully.<br>";
     else echo "❌ Error creating 'order_items' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_brands_table)) echo "✅ Table 'brands' created/checked successfully.<br>";
+    else echo "❌ Error creating 'brands' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_product_stock_table)) echo "✅ Table 'product_stock' created/checked successfully.<br>";
+    else echo "❌ Error creating 'product_stock' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_offers_table)) echo "✅ Table 'offers' created/checked successfully.<br>";
+    else echo "❌ Error creating 'offers' table: " . mysqli_error($con) . "<br>";
 }
 ?>
