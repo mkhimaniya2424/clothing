@@ -69,7 +69,8 @@ ob_start();
                 <?php endif; ?>
                 
                 <div class="mt-4 text-end">
-                    <a href="#" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+                    <a href="change_password.php" class="btn btn-outline-secondary btn-sm me-2">Change Password</a>
+                    <a href="profile_edit.php" class="btn btn-outline-primary btn-sm">Edit Profile</a>
                 </div>
             </div>
         </div>

@@ -215,11 +215,11 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                 <i class="fa-regular fa-user"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" aria-labelledby="userMenu">
-                <?php if(!isset($_SESSION['user'])): ?>
+                <?php if(!isset($_SESSION['user_id'])): ?>
                     <li><a class="dropdown-item" href="register.php"><i class="fa fa-user-plus me-2"></i>Register</a></li>
                     <li><a class="dropdown-item" href="login.php"><i class="fa fa-sign-in-alt me-2"></i>Login</a></li>
                 <?php else: ?>
-                    <li class="dropdown-header fw-bold">Hello, <?= htmlspecialchars($_SESSION['user']['name']); ?></li>
+                    <li class="dropdown-header fw-bold">Hello, <?= htmlspecialchars($_SESSION['username'] ?? 'User'); ?></li>
                     <li><a class="dropdown-item" href="profile.php"><i class="fa fa-user me-2"></i>Profile</a></li>
                     <li><a class="dropdown-item" href="orders.php"><i class="fa fa-box me-2"></i>My Orders</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -272,11 +272,11 @@ if (session_status() === PHP_SESSION_NONE) session_start();
           
           <div class="col-lg-2 col-md-6">
               <h5>Customer Care</h5>
-              <a href="#">FAQ</a>
-              <a href="#">Shipping Policy</a>
-              <a href="#">Returns & Exchanges</a>
-              <a href="#">Size Guide</a>
-              <a href="#">Privacy Policy</a>
+              <a href="faq.php">FAQ</a>
+              <a href="shipping_policy.php">Shipping Policy</a>
+              <a href="returns.php">Returns & Exchanges</a>
+              <a href="size_guide.php">Size Guide</a>
+              <a href="privacy_policy.php">Privacy Policy</a>
           </div>
           
           <div class="col-lg-4 col-md-6">

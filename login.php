@@ -18,11 +18,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if (password_verify($password, $user['password_hash'])) {
             if ($user['status'] == 'active') {
-                $_SESSION['user'] = [
-                    'id' => $user['id'],
-                    'name' => $user['username'],
-                    'email' => $user['email']
-                ];
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['email'] = $user['email'];
                 header("Location: home.php");
                 exit();
             } else {
@@ -71,7 +69,7 @@ ob_start();
                             <input class="form-check-input" type="checkbox" id="remember">
                             <label class="form-check-label" for="remember">Remember me</label>
                         </div>
-                        <a href="#" class="text-decoration-none small">Forgot Password?</a>
+                        <a href="forgot_password.php" class="text-decoration-none small">Forgot Password?</a>
                     </div>
 
                     <div class="d-grid mb-4">

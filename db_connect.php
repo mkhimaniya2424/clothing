@@ -191,5 +191,31 @@ if (isset($_GET['setup_db'])) {
     )";
     if (mysqli_query($con, $create_verification_table)) echo "✅ Table 'user_verification' created/checked successfully.<br>";
     else echo "❌ Error creating 'user_verification' table: " . mysqli_error($con) . "<br>";
+    if (mysqli_query($con, $create_verification_table)) echo "✅ Table 'user_verification' created/checked successfully.<br>";
+    else echo "❌ Error creating 'user_verification' table: " . mysqli_error($con) . "<br>";
+
+    // Wishlist Table
+    $create_wishlist_table = "CREATE TABLE IF NOT EXISTS wishlist (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        product_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        UNIQUE(user_id, product_id)
+    )";
+    if (mysqli_query($con, $create_wishlist_table)) echo "✅ Table 'wishlist' created/checked successfully.<br>";
+    else echo "❌ Error creating 'wishlist' table: " . mysqli_error($con) . "<br>";
+
+    // Messages Table
+    $create_messages_table = "CREATE TABLE IF NOT EXISTS messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+    if (mysqli_query($con, $create_messages_table)) echo "✅ Table 'messages' created/checked successfully.<br>";
+    else echo "❌ Error creating 'messages' table: " . mysqli_error($con) . "<br>";
 }
 ?>

@@ -1,5 +1,6 @@
 <?php
 ob_start();
+require_once 'admin_auth.php';
 require_once 'db_connect.php';
 
 // Fetch all brands

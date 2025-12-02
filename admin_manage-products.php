@@ -1,5 +1,6 @@
 <?php
 ob_start();
+require_once 'admin_auth.php';
 require_once 'db_connect.php';
 
 /* ---------------- FETCH PRODUCTS ---------------- */
@@ -41,7 +42,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['action']) && $_POST['action'] === 'add_product') {
         $title = trim($_POST['title']);
         $price = floatval($_POST['price']);
-        $category_main = trim($_POST['category_main']);
+        $category_main_id = trim($_POST['category_main']);
+        // Fetch Name
+        $catRow = $con->query("SELECT name FROM categories WHERE id='$category_main_id'")->fetch_assoc();
+        $category_main = $catRow ? $catRow['name'] : $category_main_id;
         $category_sub = trim($_POST['category_sub']);
         $category_type = trim($_POST['category_type']);
         $category_brand = trim($_POST['category_brand']);

@@ -1,5 +1,6 @@
 <?php
 ob_start();
+require_once 'admin_auth.php';
 include_once("db_connect.php");
 
 // SAFE COUNT FUNCTION (returns 0 if table does not exist)
@@ -66,7 +67,7 @@ if($checkOrdersTable->num_rows > 0) {
                         <h3><?php echo $products; ?></h3>
                     </div>
                 </div>
-                <a href="manage-products.php" class="card-footer text-white">More info</a>
+                <a href="admin_manage-products.php" class="card-footer text-white">More info</a>
             </div>
         </div>
 
@@ -82,7 +83,7 @@ if($checkOrdersTable->num_rows > 0) {
                         <h3><?php echo $orders; ?></h3>
                     </div>
                 </div>
-                <a href="manage-orders.php" class="card-footer text-white">More info</a>
+                <a href="admin_manage-orders.php" class="card-footer text-white">More info</a>
             </div>
         </div>
 
@@ -98,7 +99,7 @@ if($checkOrdersTable->num_rows > 0) {
                         <h3><?php echo $users; ?></h3>
                     </div>
                 </div>
-                <a href="manage-users.php" class="card-footer text-white">More info</a>
+                <a href="admin_manage-users.php" class="card-footer text-white">More info</a>
             </div>
         </div>
 

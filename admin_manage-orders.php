@@ -1,13 +1,3 @@
-<?php
-$title_page = "Manage Orders";
-ob_start();
-include_once("db_connect.php");
-
-// Handle Status Update
-if (isset($_POST['update_status'])) {
-    $order_id = intval($_POST['order_id']);
-    $status = mysqli_real_escape_string($con, $_POST['status']);
-    mysqli_query($con, "UPDATE orders SET order_status='$status' WHERE id=$order_id");
     header("Location: admin_manage-orders.php");
     exit;
 }

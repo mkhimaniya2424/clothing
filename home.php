@@ -39,25 +39,33 @@ $title_page = "Home";
     <h2 class="text-center fw-bold mb-4">Featured Collections</h2>
     <div class="row g-4">
         <?php 
-        $products = [
-            ["name"=>"Stylish Dress 1", "desc"=>"Elegant and comfy outfit.", "price"=>"₹1,499", "img"=>"https://source.unsplash.com/400x400/?dress,1"],
-            ["name"=>"Stylish Dress 2", "desc"=>"Trendy & chic design.", "price"=>"₹1,299", "img"=>"https://source.unsplash.com/400x400/?dress,2"],
-            ["name"=>"Stylish Dress 3", "desc"=>"Perfect for casual wear.", "price"=>"₹1,799", "img"=>"https://source.unsplash.com/400x400/?dress,3"],
-            ["name"=>"Stylish Dress 4", "desc"=>"Premium fabric & fit.", "price"=>"₹1,999", "img"=>"https://source.unsplash.com/400x400/?dress,4"]
-        ];
-        foreach($products as $p): ?>
+        require_once 'db_connect.php';
+        // Fetch 4 random active products
+        $featRes = $con->query("SELECT * FROM products WHERE status='active' ORDER BY RAND() LIMIT 4");
+        if($featRes && $featRes->num_rows > 0):
+            while($p = $featRes->fetch_assoc()): 
+                $img = "https://via.placeholder.com/400";
+                if(!empty($p['images'])) {
+                    $decoded = json_decode($p['images'], true);
+                    if($decoded && count($decoded) > 0) {
+                        $img = $decoded[0];
+                    }
+                }
+        ?>
         <div class="col-md-6 col-lg-3">
             <div class="card h-100 shadow-sm border-0">
-                <img src="<?= $p['img'] ?>" class="card-img-top rounded-top" alt="<?= $p['name'] ?>">
+                <img src="<?= htmlspecialchars($img) ?>" class="card-img-top rounded-top" alt="<?= htmlspecialchars($p['title']) ?>" style="height: 300px; object-fit: cover;">
                 <div class="card-body text-center">
-                    <h5 class="card-title"><?= $p['name'] ?></h5>
-                    <p class="card-text text-muted"><?= $p['desc'] ?></p>
-                    <p class="fw-bold text-dark"><?= $p['price'] ?></p>
-                    <a href="shop.php" class="btn btn-primary w-100">Shop Now</a>
+                    <h5 class="card-title"><?= htmlspecialchars($p['title']) ?></h5>
+                    <p class="fw-bold text-dark">₹<?= number_format($p['price'], 2) ?></p>
+                    <a href="product_view.php?id=<?= $p['id'] ?>" class="btn btn-primary w-100">View Details</a>
                 </div>
             </div>
         </div>
-        <?php endforeach; ?>
+        <?php endwhile; 
+        else: ?>
+            <p class="text-center">No featured products found.</p>
+        <?php endif; ?>
     </div>
 </section>
 
@@ -75,7 +83,7 @@ $title_page = "Home";
     <div class="container">
         <h2 class="fw-bold mb-3">Seasonal Sale</h2>
         <p class="mb-4">Up to 50% off on selected collections!</p>
-        <a href="offers/offers.php" class="btn btn-light btn-lg">Grab Discount</a>
+        <a href="offers.php" class="btn btn-light btn-lg">Grab Discount</a>
     </div>
 </section>
 
@@ -84,17 +92,21 @@ $title_page = "Home";
     <h2 class="fw-bold mb-4">Top Brands</h2>
     <div class="row g-4 justify-content-center">
         <?php 
-        $brands = [
-            "https://source.unsplash.com/150x100/?brand,1",
-            "https://source.unsplash.com/150x100/?brand,2",
-            "https://source.unsplash.com/150x100/?brand,3",
-            "https://source.unsplash.com/150x100/?brand,4"
-        ];
-        foreach($brands as $b): ?>
+        // Fetch Brands
+        $brandRes = $con->query("SELECT * FROM brands ORDER BY name LIMIT 4");
+        if($brandRes && $brandRes->num_rows > 0):
+            while($b = $brandRes->fetch_assoc()):
+                // Assuming no logo column in db_connect.php, using name as placeholder or static image
+        ?>
         <div class="col-6 col-md-3">
-            <img src="<?= $b ?>" class="img-fluid rounded shadow-sm" alt="Brand Logo">
+            <div class="p-4 border rounded bg-light">
+                <h5 class="mb-0"><?= htmlspecialchars($b['name']) ?></h5>
+            </div>
         </div>
-        <?php endforeach; ?>
+        <?php endwhile; 
+        else: ?>
+            <p>No brands to display.</p>
+        <?php endif; ?>
     </div>
 </section>
 
