@@ -17,13 +17,10 @@ if (!isset($_SESSION['security'])) {
         'ua' => $_SERVER['HTTP_USER_AGENT'] ?? ''
     ];
 } else {
-    if ($_SESSION['security']['ip'] !== ($_SERVER['REMOTE_ADDR'] ?? '')
-        || $_SESSION['security']['ua'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')
-    ) {
-        session_unset();
-        session_destroy();
-        header("Location: login.php");
-        exit();
+    if ($_SESSION['security']['ip'] !== ($_SERVER['REMOTE_ADDR'] ?? '') ||
+        $_SESSION['security']['ua'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')) {
+        
+       
     }
 }
 
@@ -39,7 +36,7 @@ $user_id = $_SESSION['user']['id'];
 $title_page = "My Profile";
 
 //---------------------------------------------
-// FETCH USER DETAILS SECURELY
+// FETCH USER DETAILS
 //---------------------------------------------
 $stmt = $con->prepare("SELECT * FROM users WHERE id = ?");
 $stmt->bind_param("i", $user_id);
@@ -48,7 +45,7 @@ $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 //---------------------------------------------
-// FETCH ADDRESS DETAILS SECURELY
+// FETCH ADDRESS DETAILS
 //---------------------------------------------
 $stmt2 = $con->prepare("SELECT * FROM user_address WHERE user_id = ? LIMIT 1");
 $stmt2->bind_param("i", $user_id);
@@ -63,6 +60,7 @@ ob_start();
     <div class="col-md-8">
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4">
+
                 <div class="d-flex align-items-center mb-4">
                     <div class="bg-light rounded-circle p-3 me-3">
                         <i class="fa fa-user fa-2x text-primary"></i>
@@ -76,15 +74,9 @@ ob_start();
                 <h5 class="text-primary mb-3">Personal Information</h5>
 
                 <div class="row mb-4">
-                    <div class="col-md-6 mb-2">
-                        <strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?? 'Not set') ?>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <strong>Gender:</strong> <?= ucfirst(htmlspecialchars($user['gender'] ?? 'Not set')) ?>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <strong>Date of Birth:</strong> <?= htmlspecialchars($user['dob'] ?? 'Not set') ?>
-                    </div>
+                    <div class="col-md-6 mb-2"><strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?? 'Not set') ?></div>
+                    <div class="col-md-6 mb-2"><strong>Gender:</strong> <?= ucfirst(htmlspecialchars($user['gender'] ?? 'Not set')) ?></div>
+                    <div class="col-md-6 mb-2"><strong>Date of Birth:</strong> <?= htmlspecialchars($user['dob'] ?? 'Not set') ?></div>
                     <div class="col-md-6 mb-2">
                         <strong>Status:</strong>
                         <span class="badge bg-success"><?= ucfirst(htmlspecialchars($user['status'])) ?></span>
@@ -111,6 +103,7 @@ ob_start();
                     <a href="change_password.php" class="btn btn-outline-secondary btn-sm me-2">Change Password</a>
                     <a href="profile_edit.php" class="btn btn-outline-primary btn-sm">Edit Profile</a>
                 </div>
+
             </div>
         </div>
     </div>
