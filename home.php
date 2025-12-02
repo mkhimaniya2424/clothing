@@ -4,20 +4,35 @@ $title_page = "Home";
 ?>
 
 <!-- ================= HERO SECTION ================= -->
+
+<style>
+.hero-slider-img {
+    height: 500px;              /* Desktop height */
+    width: 100%;
+    object-fit: cover;          /* Crop nicely */
+    object-position: center;    
+}
+
+@media (max-width: 768px) {
+    .hero-slider-img {
+        height: 300px;          /* Mobile height */
+    }
+}
+</style>
+
 <section class="hero-section position-relative mb-5">
     <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <?php
             $heroSlides = [
-                "images/slider/slider1.jpg",
-                "images/slider/slider2.jpg",
-                // "images/slider/slider3.jpg"
+                "images/slider/slide1.jpg",
+                "images/slider/slide2.jpg"
             ];
 
             foreach($heroSlides as $i => $img):
             ?>
             <div class="carousel-item <?= $i === 0 ? 'active' : '' ?>">
-                <img src="<?= $img ?>" class="d-block w-100" alt="Slider Image">
+                <img src="<?= $img ?>" class="d-block w-100 hero-slider-img" alt="Slider Image">
             </div>
             <?php endforeach; ?>
         </div>
@@ -39,11 +54,14 @@ $title_page = "Home";
     <div class="row g-4">
         <?php 
         require_once 'db_connect.php';
+
         // Fetch 4 random active products
         $featRes = $con->query("SELECT * FROM products WHERE status='active' ORDER BY RAND() LIMIT 4");
+
         if($featRes && $featRes->num_rows > 0):
             while($p = $featRes->fetch_assoc()): 
                 $img = "https://via.placeholder.com/400";
+
                 if(!empty($p['images'])) {
                     $decoded = json_decode($p['images'], true);
                     if($decoded && count($decoded) > 0) {
@@ -68,6 +86,7 @@ $title_page = "Home";
     </div>
 </section>
 
+
 <!-- ================= NEW ARRIVALS ================= -->
 <section class="bg-light py-5 text-center">
     <div class="container">
@@ -76,6 +95,7 @@ $title_page = "Home";
         <a href="shop.php" class="btn btn-outline-primary btn-lg">Explore Now</a>
     </div>
 </section>
+
 
 <!-- ================= SEASONAL SALE ================= -->
 <section class="py-5 text-white text-center" style="background-color:#808080;">
@@ -86,6 +106,7 @@ $title_page = "Home";
     </div>
 </section>
 
+
 <!-- ================= TOP BRANDS ================= -->
 <section class="container py-5 text-center">
     <h2 class="fw-bold mb-4">Top Brands</h2>
@@ -93,9 +114,9 @@ $title_page = "Home";
         <?php 
         // Fetch Brands
         $brandRes = $con->query("SELECT * FROM brands ORDER BY name LIMIT 4");
+
         if($brandRes && $brandRes->num_rows > 0):
             while($b = $brandRes->fetch_assoc()):
-                // Assuming no logo column in db_connect.php, using name as placeholder or static image
         ?>
         <div class="col-6 col-md-3">
             <div class="p-4 border rounded bg-light">
@@ -108,6 +129,7 @@ $title_page = "Home";
         <?php endif; ?>
     </div>
 </section>
+
 
 <!-- ================= ABOUT ================= -->
 <section class="bg-light py-5 text-center">
