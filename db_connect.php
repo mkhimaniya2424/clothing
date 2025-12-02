@@ -65,7 +65,7 @@ $create_orders_table = "CREATE TABLE IF NOT EXISTS orders (
     payment_status ENUM('pending','completed','failed') DEFAULT 'pending',
     order_status ENUM('pending','processing','shipped','delivered','cancelled') DEFAULT 'pending',
     shipping_address TEXT,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 )";
 

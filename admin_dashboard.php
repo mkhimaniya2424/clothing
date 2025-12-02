@@ -30,10 +30,10 @@ $checkOrdersTable = $con->query($sql);
 
 if($checkOrdersTable->num_rows > 0) {
     $revQuery = $con->query("
-        SELECT DATE_FORMAT(order_date, '%b') AS month, SUM(total_amount) AS revenue, COUNT(*) AS order_count
+        SELECT DATE_FORMAT(created_at, '%b') AS month, SUM(total_amount) AS revenue, COUNT(*) AS order_count
         FROM orders
-        GROUP BY DATE_FORMAT(order_date, '%Y-%m')
-        ORDER BY order_date ASC
+        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        ORDER BY created_at ASC
         LIMIT 12
     ");
 
