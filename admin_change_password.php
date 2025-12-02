@@ -11,7 +11,7 @@ if (!isset($_SESSION['admin'])) {
 $admin_id = $_SESSION['admin']['id'];
 $success = $error = "";
 
-// Fetch admin current password hash
+
 $sql = "SELECT password FROM admin WHERE id = $admin_id LIMIT 1";
 $result = $con->query($sql);
 $row = $result->fetch_assoc();
