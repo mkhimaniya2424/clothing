@@ -1,0 +1,26 @@
+.sidebar {
+    width: 220px;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1040;
+    position: fixed;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 220px;
+    width: calc(100% - 220px);
+    height: 60px;
+    z-index: 1050;
+}
+
+.dropdown-menu {
+    z-index: 1100 !important;
+}
+
+.main-content {
+    margin-left: 220px;
+    margin-top: 60px;
+}
