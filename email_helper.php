@@ -13,13 +13,13 @@ function sendEmail($to, $subject, $body) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         // REPLACE WITH YOUR EMAIL AND APP PASSWORD
-        $mail->Username   = 'your-email@gmail.com'; 
-        $mail->Password   = 'your-app-password'; 
+        $mail->Username   = 'clothingsite60@gmail.com'; 
+        $mail->Password   = 'lfko pgxu cldd vgoh'; 
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
         // Recipients
-        $mail->setFrom('your-email@gmail.com', 'Clothing Store');
+        $mail->setFrom('clothingsite60@gmail.com', 'Clothing Store');
         $mail->addAddress($to);
 
         // Content
