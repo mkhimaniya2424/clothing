@@ -1,10 +1,8 @@
 <?php
-//session_start();
-include_once("../db/db_connect.php"); // DB connection
-
 ob_start();
+require_once 'db_connect.php';
 
-// Mark as read/unread
+// Mark message as read/unread
 if (isset($_GET['toggle_id'])) {
     $toggleId = intval($_GET['toggle_id']);
 
@@ -15,7 +13,6 @@ if (isset($_GET['toggle_id'])) {
 
     if ($row = $result->fetch_assoc()) {
         $newStatus = ($row['status'] === 'unread') ? 'read' : 'unread';
-
         $updateStmt = $con->prepare("UPDATE messages SET status=? WHERE id=?");
         $updateStmt->bind_param("si", $newStatus, $toggleId);
         $updateStmt->execute();
@@ -23,16 +20,13 @@ if (isset($_GET['toggle_id'])) {
     }
 
     $stmt->close();
-    header("Location: message.php");
+    header("Location: admin_message.php");
     exit;
 }
 
 // Fetch all messages
 $result = $con->query("SELECT * FROM messages ORDER BY created_at DESC");
-$messages = [];
-while ($row = $result->fetch_assoc()) {
-    $messages[] = $row;
-}
+$messages = $result->fetch_all(MYSQLI_ASSOC);
 ?>
 
 <div class="container mt-4">
@@ -41,7 +35,7 @@ while ($row = $result->fetch_assoc()) {
     <?php if (!empty($messages)): ?>
         <div class="list-group mt-3">
             <?php foreach ($messages as $m): ?>
-                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center 
+                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
                     <?= $m['status'] === 'unread' ? 'list-group-item-warning' : '' ?>">
                     <div>
                         <strong><?= htmlspecialchars($m['from_user']) ?></strong> 
@@ -61,11 +55,11 @@ while ($row = $result->fetch_assoc()) {
             <?php endforeach; ?>
         </div>
     <?php else: ?>
-        <div class="alert alert-success mt-3">No messages found!</div>
+        <div class="alert alert-info mt-3">No messages found!</div>
     <?php endif; ?>
 </div>
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");  // Load layout and print content
+include_once("admin_layout.php");
 ?>

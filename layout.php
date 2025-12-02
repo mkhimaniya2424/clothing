@@ -256,7 +256,6 @@ if (session_status() === PHP_SESSION_NONE) session_start();
               <div class="social-links">
                   <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
                   <a href="#"><i class="fa-brands fa-instagram"></i></a>
-                  <a href="#"><i class="fa-brands fa-twitter"></i></a>
                   <a href="#"><i class="fa-brands fa-pinterest"></i></a>
               </div>
           </div>
@@ -279,16 +278,7 @@ if (session_status() === PHP_SESSION_NONE) session_start();
               <a href="privacy_policy.php">Privacy Policy</a>
           </div>
           
-          <div class="col-lg-4 col-md-6">
-              <h5>Newsletter</h5>
-              <p class="text-secondary">Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.</p>
-              <form class="mt-3">
-                  <div class="input-group">
-                      <input type="email" class="form-control" placeholder="Enter your email">
-                      <button class="btn btn-primary" type="button">Subscribe</button>
-                  </div>
-              </form>
-          </div>
+          
       </div>
       
       <hr class="border-secondary my-4 opacity-25">

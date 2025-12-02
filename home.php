@@ -108,6 +108,7 @@ $title_page = "Home";
 
 
 <!-- ================= TOP BRANDS ================= -->
+<!-- ================= TOP BRANDS ================= -->
 <section class="container py-5 text-center">
     <h2 class="fw-bold mb-4">Top Brands</h2>
     <div class="row g-4 justify-content-center">
@@ -117,9 +118,11 @@ $title_page = "Home";
 
         if($brandRes && $brandRes->num_rows > 0):
             while($b = $brandRes->fetch_assoc()):
+                $logo = !empty($b['logo']) ? htmlspecialchars($b['logo']) : 'https://via.placeholder.com/150x80?text=No+Logo';
         ?>
         <div class="col-6 col-md-3">
             <div class="p-4 border rounded bg-light">
+                <img src="<?= $logo ?>" alt="<?= htmlspecialchars($b['name']) ?>" class="img-fluid mb-2" style="max-height:80px; object-fit:contain;">
                 <h5 class="mb-0"><?= htmlspecialchars($b['name']) ?></h5>
             </div>
         </div>

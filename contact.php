@@ -18,15 +18,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         if ($stmt->execute()) {
             // Send Email to Admin
-            $subject = "New Contact Message from $name";
-            $body = "<p><strong>Name:</strong> $name</p><p><strong>Email:</strong> $email</p><p><strong>Message:</strong><br>$message</p>";
-            // Replace with admin email
-            sendEmail('clothingsite60@gmail.com', $subject, $body);
+            $adminSubject = "New Contact Message from $name";
+            $body = "<p><strong>Name:</strong> $name</p>
+                     <p><strong>Email:</strong> $email</p>
+                     <p><strong>Subject:</strong> $subject</p>
+                     <p><strong>Message:</strong><br>$message</p>";
+            sendEmail('clothingsite60@gmail.com', $adminSubject, $body);
             
             $msg = "Message sent successfully! We will get back to you soon.";
         } else {
             $msg = "Error sending message.";
         }
+        $stmt->close();
     } else {
         $msg = "All fields are required.";
     }
@@ -37,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h1 class="text-center fw-bold mb-5">Contact Us</h1>
 
     <?php if ($msg): ?>
-        <div class="alert alert-info text-center mb-4"><?= $msg ?></div>
+        <div class="alert alert-info text-center mb-4"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
     <div class="row g-4">

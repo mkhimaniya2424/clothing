@@ -1,24 +1,60 @@
 <?php
+//---------------------------------------------
+// SESSION SECURITY
+//---------------------------------------------
 session_start();
-require_once 'db_connect.php';
 
+// Prevent session fixation
+if (!isset($_SESSION['initiated'])) {
+    session_regenerate_id(true);
+    $_SESSION['initiated'] = true;
+}
+
+// Prevent session hijacking
+if (!isset($_SESSION['security'])) {
+    $_SESSION['security'] = [
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? '',
+        'ua' => $_SERVER['HTTP_USER_AGENT'] ?? ''
+    ];
+} else {
+    if ($_SESSION['security']['ip'] !== ($_SERVER['REMOTE_ADDR'] ?? '')
+        || $_SESSION['security']['ua'] !== ($_SERVER['HTTP_USER_AGENT'] ?? '')
+    ) {
+        session_unset();
+        session_destroy();
+        header("Location: login.php");
+        exit();
+    }
+}
+
+// Check login
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit();
 }
 
+require_once 'db_connect.php';
+
 $user_id = $_SESSION['user']['id'];
 $title_page = "My Profile";
 
-// Fetch user details
-$user_query = "SELECT * FROM users WHERE id = '$user_id'";
-$user_result = mysqli_query($con, $user_query);
-$user = mysqli_fetch_assoc($user_result);
+//---------------------------------------------
+// FETCH USER DETAILS SECURELY
+//---------------------------------------------
+$stmt = $con->prepare("SELECT * FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
-// Fetch address details
-$address_query = "SELECT * FROM user_address WHERE user_id = '$user_id' LIMIT 1";
-$address_result = mysqli_query($con, $address_query);
-$address = mysqli_fetch_assoc($address_result);
+//---------------------------------------------
+// FETCH ADDRESS DETAILS SECURELY
+//---------------------------------------------
+$stmt2 = $con->prepare("SELECT * FROM user_address WHERE user_id = ? LIMIT 1");
+$stmt2->bind_param("i", $user_id);
+$stmt2->execute();
+$address = $stmt2->get_result()->fetch_assoc();
+$stmt2->close();
 
 ob_start();
 ?>
@@ -38,6 +74,7 @@ ob_start();
                 </div>
 
                 <h5 class="text-primary mb-3">Personal Information</h5>
+
                 <div class="row mb-4">
                     <div class="col-md-6 mb-2">
                         <strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?? 'Not set') ?>
@@ -49,25 +86,27 @@ ob_start();
                         <strong>Date of Birth:</strong> <?= htmlspecialchars($user['dob'] ?? 'Not set') ?>
                     </div>
                     <div class="col-md-6 mb-2">
-                        <strong>Status:</strong> <span class="badge bg-success"><?= ucfirst(htmlspecialchars($user['status'])) ?></span>
+                        <strong>Status:</strong>
+                        <span class="badge bg-success"><?= ucfirst(htmlspecialchars($user['status'])) ?></span>
                     </div>
                 </div>
 
                 <hr>
 
                 <h5 class="text-primary mb-3">Address Details</h5>
+
                 <?php if ($address): ?>
-                    <p class="mb-1"><strong><?= ucfirst($address['address_type']) ?> Address:</strong></p>
-                    <p class="mb-0">
+                    <p><strong><?= ucfirst($address['address_type']) ?>:</strong></p>
+                    <p>
                         <?= htmlspecialchars($address['address_line1']) ?><br>
-                        <?php if($address['address_line2']) echo htmlspecialchars($address['address_line2']) . "<br>"; ?>
+                        <?= htmlspecialchars($address['address_line2'] ?? '') ?><br>
                         <?= htmlspecialchars($address['city']) ?>, <?= htmlspecialchars($address['state']) ?> - <?= htmlspecialchars($address['postal_code']) ?><br>
                         <?= htmlspecialchars($address['country']) ?>
                     </p>
                 <?php else: ?>
                     <p class="text-muted">No address found.</p>
                 <?php endif; ?>
-                
+
                 <div class="mt-4 text-end">
                     <a href="change_password.php" class="btn btn-outline-secondary btn-sm me-2">Change Password</a>
                     <a href="profile_edit.php" class="btn btn-outline-primary btn-sm">Edit Profile</a>

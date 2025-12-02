@@ -115,6 +115,7 @@ if ($res) {
 
     <a href="admin_dashboard.php" class="sidebar-link active"><i class="fa fa-home me-2"></i>Dashboard</a>
     <a href="admin_manage-categories.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage categories</a>
+    <a href="admin_manage-brands.php" class="sidebar-link"><i class="fa fa-tags me-2"></i>Manage Brands</a>
     <a href="admin_manage-products.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage Products</a>
     <a href="admin_manage-orders.php" class="sidebar-link"><i class="fa fa-shopping-cart me-2"></i>Manage Orders</a>
     <a href="admin_manage-wishlist.php" class="sidebar-link"><i class="fa fa-heart me-2"></i>Manage Wishlist</a>
