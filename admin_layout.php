@@ -4,7 +4,7 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['admin'])) {
-    header("Location: login1.php");
+    header("Location: admin_login.php");
     exit;
 }
 
