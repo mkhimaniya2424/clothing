@@ -4,11 +4,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['admin'])) {
-    header("Location: login1.php");
+    header("Location: admin_login.php");
     exit;
 }
 
-include_once("../db/db_connect.php");
+include_once("db_connect.php");
 
 // Profile images folder
 $profileDir = __DIR__ . "/images/profile/";
@@ -99,7 +99,7 @@ ob_start();
                     </div>
 
                     <div class="d-flex justify-content-between">
-                        <a href="profile1.php" class="btn btn-secondary">Back</a>
+                        <a href="admin_profile.php" class="btn btn-secondary">Back</a>
                         <button type="submit" class="btn btn-success">Update Profile</button>
                     </div>
                 </form>
@@ -110,5 +110,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>

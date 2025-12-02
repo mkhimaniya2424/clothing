@@ -13,7 +13,7 @@ if (!isset($_SESSION['admin'])) {
 $notificationCount = 0;
 
 $unreadCount = 0;
-include_once("../db/db_connect.php");
+include_once("db_connect.php");
 $res = $con->query("SELECT COUNT(*) as cnt FROM messages WHERE status='unread'");
 if ($res) {
     $unreadCount = $res->fetch_assoc()['cnt'];
@@ -27,16 +27,16 @@ if ($res) {
 <title>Admin - Clothing Brand</title>
 
 <!-- Bootstrap -->
-<link rel="stylesheet" href="../css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap.min.css">
 
 <!-- Font Awesome -->
-<link rel="stylesheet" href="../fontawesome/css/all.min.css">
+<link rel="stylesheet" href="fontawesome/css/all.min.css">
 
 <!-- Custom CSS -->
-<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="css/admin.css">
 
-<script src="../js/jquery-3.7.1.min.js"></script>
-<script src="../js/bootstrap.bundle.min.js"></script>
+<script src="js/jquery-3.7.1.min.js"></script>
+<script src="js/bootstrap.bundle.min.js"></script>
 
 <style>
 /* ----------------- Sidebar ------------------- */
@@ -113,16 +113,16 @@ if ($res) {
         <i class="fa-solid fa-shirt me-2"></i>Admin
     </h4>
 
-    <a href="dashboard.php" class="sidebar-link active"><i class="fa fa-home me-2"></i>Dashboard</a>
-        <a href="manage-categories.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage categories</a>
-    <a href="manage-products.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage Products</a>
-    <a href="manage-orders.php" class="sidebar-link"><i class="fa fa-shopping-cart me-2"></i>Manage Orders</a>
-    <a href="manage-wishlist.php" class="sidebar-link"><i class="fa fa-heart me-2"></i>Manage Wishlist</a>
-    <a href="manage-cart.php" class="sidebar-link"><i class="fa fa-cart-plus me-2"></i>Manage Cart</a>
-    <a href="manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
-    <a href="manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
-    <a href="manage-visitors.php" class="sidebar-link"><i class="fa fa-users-cog me-2"></i>Visitors</a>
-    <a href="revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>
+    <a href="admin_dashboard.php" class="sidebar-link active"><i class="fa fa-home me-2"></i>Dashboard</a>
+    <a href="admin_manage-categories.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage categories</a>
+    <a href="admin_manage-products.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage Products</a>
+    <a href="admin_manage-orders.php" class="sidebar-link"><i class="fa fa-shopping-cart me-2"></i>Manage Orders</a>
+    <a href="admin_manage-wishlist.php" class="sidebar-link"><i class="fa fa-heart me-2"></i>Manage Wishlist</a>
+    <a href="admin_manage-cart.php" class="sidebar-link"><i class="fa fa-cart-plus me-2"></i>Manage Cart</a>
+    <a href="admin_manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
+    <a href="admin_manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
+    <a href="admin_manage-visitors.php" class="sidebar-link"><i class="fa fa-users-cog me-2"></i>Visitors</a>
+    <a href="admin_revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>
 </div>
 
 <!-- HEADER -->
@@ -130,12 +130,12 @@ if ($res) {
     <div class="d-flex align-items-center">
 
         <!-- Notifications (Badge disabled but icon stays) -->
-        <a href="notification.php" class="me-3 position-relative text-dark">
+        <a href="admin_notification.php" class="me-3 position-relative text-dark">
             <i class="fa fa-bell fs-5"></i>
         </a>
 
         <!-- Messages -->
-        <a href="message.php" class="me-3 position-relative text-dark">
+        <a href="admin_message.php" class="me-3 position-relative text-dark">
             <i class="fa fa-envelope fs-5"></i>
             <?php if(!empty($unreadCount) && $unreadCount > 0): ?>
                 <span class="badge bg-primary position-absolute top-0 start-100 translate-middle rounded-pill">
@@ -151,10 +151,10 @@ if ($res) {
                 <?= htmlspecialchars($_SESSION['admin']['name']) ?>
             </a>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="profile1.php"><i class="fa fa-user me-2"></i>Profile</a></li>
-                <li><a class="dropdown-item" href="change_password.php"><i class="fa fa-key me-2"></i>Change Password</a></li>
+                <li><a class="dropdown-item" href="admin_profile.php"><i class="fa fa-user me-2"></i>Profile</a></li>
+                <li><a class="dropdown-item" href="admin_change_password.php"><i class="fa fa-key me-2"></i>Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="logout1.php"><i class="fa fa-sign-out-alt me-2"></i>Logout</a></li>
+                <li><a class="dropdown-item text-danger" href="admin_logout.php"><i class="fa fa-sign-out-alt me-2"></i>Logout</a></li>
             </ul>
         </div>
     </div>

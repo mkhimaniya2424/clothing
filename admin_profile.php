@@ -4,11 +4,11 @@ if (session_status() == PHP_SESSION_NONE) {
 }
 
 if (!isset($_SESSION['admin'])) {
-    header("Location: login1.php");
+    header("Location: admin_login.php");
     exit;
 }
 
-include_once("../db/db_connect.php");
+include_once("db_connect.php");
 
 // Fetch admin data
 $admin_id = $_SESSION['admin']['id'];
@@ -57,8 +57,8 @@ ob_start();
                 <div class="d-flex justify-content-between mt-4">
                     <a href="dashboard.php" class="btn btn-secondary">Back</a>
                     <div>
-                        <a href="profile_edit1.php" class="btn btn-warning me-2">Edit Profile</a>
-                        <a href="change_password1.php" class="btn btn-danger">Change Password</a>
+                        <a href="admin_profile_edit.php" class="btn btn-warning me-2">Edit Profile</a>
+                        <a href="admin_change_password.php" class="btn btn-danger">Change Password</a>
                     </div>
                 </div>
             </div>
@@ -68,5 +68,5 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php"); // use your existing layout
+include_once("admin_layout.php"); // use your existing layout
 ?>

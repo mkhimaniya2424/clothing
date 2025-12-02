@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once("../db/db_connect.php");
+include_once("db_connect.php");
 
 // Redirect if not logged in
 if (!isset($_SESSION['admin'])) {
-    header("Location: login1.php");
+    header("Location: admin_login.php");
     exit;
 }
 
@@ -87,7 +87,7 @@ $title_page = "Change Password";
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">Update Password</button>
-                    <a href="profile1.php" class="btn btn-secondary w-100 mt-2">Back to Profile</a>
+                    <a href="admin_profile.php" class="btn btn-secondary w-100 mt-2">Back to Profile</a>
                 </form>
 
             </div>
@@ -97,5 +97,5 @@ $title_page = "Change Password";
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>

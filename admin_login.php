@@ -1,10 +1,10 @@
 <?php
 session_start();
-include_once("../db/db_connect.php");
+include_once("db_connect.php");
 
 // If already logged in, go to dashboard
 if (isset($_SESSION['admin'])) {
-    header("Location: dashboard.php");
+    header("Location: admin_dashboard.php");
     exit;
 }
 
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 "name"     => $row["full_name"]
             ];
 
-            header("Location: dashboard.php");
+            header("Location: admin_dashboard.php");
             exit;
 
         } else {

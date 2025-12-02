@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once __DIR__ . "/../db/db_connect.php"; 
+include_once("db_connect.php");
 
 // SAFE COUNT FUNCTION (returns 0 if table does not exist)
 function safeCount($con, $table) {
@@ -192,5 +192,5 @@ new Chart(document.getElementById('ordersChart'), {
 
 <?php
 $content = ob_get_clean();
-include_once("layout1.php");
+include_once("admin_layout.php");
 ?>
