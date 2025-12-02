@@ -3,7 +3,7 @@ ob_start();
 require_once 'db_connect.php';
 
 /* -------------------------
-   AUTO-CREATE Main Categories
+   AUTO-CREATE Main Categories (If not exist)
 --------------------------*/
 $mainCategories = ['Men', 'Women', 'Children'];
 foreach ($mainCategories as $catName) {
@@ -13,6 +13,7 @@ foreach ($mainCategories as $catName) {
     $stmt->store_result();
 
     if ($stmt->num_rows === 0) {
+        // Status 1 = Active
         $stmt2 = $con->prepare("INSERT INTO categories (name, parent_id, status) VALUES (?, NULL, 1)");
         $stmt2->bind_param("s", $catName);
         $stmt2->execute();
@@ -26,23 +27,29 @@ $msg = '';
 /* -------------------------
    ADD CATEGORY
 --------------------------*/
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_POST['action'] === 'add_category') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add_category') {
     $name = trim($_POST['name']);
     $parent_id = ($_POST['parent_id'] !== '') ? intval($_POST['parent_id']) : NULL;
-
-    $stmt = $con->prepare("INSERT INTO categories (name, parent_id, status) VALUES (?, ?, 1)");
+    
+    // Default status 1 (Active)
+    $stmt = $con->prepare("INSERT INTO categories (name, parent_id, status, created_at) VALUES (?, ?, 1, NOW())");
     $stmt->bind_param("si", $name, $parent_id);
 
-    $msg = $stmt->execute() ? "Category added successfully!" : "Error: ".$stmt->error;
+    if ($stmt->execute()) {
+        $msg = "Category added successfully!";
+    } else {
+        $msg = "Error: " . $stmt->error;
+    }
     $stmt->close();
 }
 
 /* -------------------------
-   ENABLE / DISABLE
+   ENABLE / DISABLE (Toggle Status)
 --------------------------*/
 if (isset($_GET['toggle'])) {
     $id = intval($_GET['toggle']);
-    $con->query("UPDATE categories SET status = 1 - status WHERE id=$id");
+    // Toggle between 1 and 0
+    $con->query("UPDATE categories SET status = IF(status=1, 0, 1) WHERE id=$id");
     $msg = "Category status updated.";
 }
 
@@ -72,9 +79,11 @@ if (isset($_GET['delete'])) {
 --------------------------*/
 $cats = [];
 $res = $con->query("SELECT * FROM categories ORDER BY parent_id, name");
-while ($r = $res->fetch_assoc()) $cats[] = $r;
+if($res) {
+    while ($r = $res->fetch_assoc()) $cats[] = $r;
+}
 
-$mainCats = array_filter($cats, fn($c) => $c['parent_id'] === NULL);
+$mainCats = array_filter($cats, fn($c) => empty($c['parent_id']));
 ?>
 
 <div class="container mt-4">
@@ -84,17 +93,16 @@ $mainCats = array_filter($cats, fn($c) => $c['parent_id'] === NULL);
         <div class="alert alert-info"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+    <!-- <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
         + Add Category
-    </button>
+    </button> -->
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
             <tr>
-                <th width="20%">Main Category</th>
-                <th width="45%">Subcategories</th>
-                <th width="15%">Status</th>
-                <th width="20%">Actions</th>
+                <th width="50%">Category Name</th>
+                <th width="20%">Status</th>
+                <th width="30%">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -102,64 +110,72 @@ $mainCats = array_filter($cats, fn($c) => $c['parent_id'] === NULL);
         <?php foreach ($mainCats as $mainCat): ?>
             <?php $subs = array_filter($cats, fn($c) => $c['parent_id'] == $mainCat['id']); ?>
 
-            <tr>
-                <td><strong><?= htmlspecialchars($mainCat['name']) ?></strong></td>
-
-                <td>
-                    <?php if ($subs): ?>
-                        <?php foreach ($subs as $s): ?>
-                            <span class="badge bg-primary mb-1"><?= htmlspecialchars($s['name']) ?></span>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <em>No subcategories</em>
-                    <?php endif; ?>
+            <!-- Main Category Row -->
+            <tr class="table-secondary">
+                <td class="fw-bold fs-5">
+                    <i class="fa fa-folder me-2"></i><?= htmlspecialchars($mainCat['name']) ?>
                 </td>
-
                 <td>
-                    <?= ($mainCat['status'])
+                    <?= ($mainCat['status'] == 1)
                         ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-secondary">Disabled</span>' ?>
+                        : '<span class="badge bg-secondary">Inactive</span>' ?>
                 </td>
-
                 <td>
-                    <a href="?toggle=<?= $mainCat['id'] ?>" class="btn btn-sm btn-info">Enable/Disable</a>
-
-                    <a href="?delete=<?= $mainCat['id'] ?>" 
-                       class="btn btn-sm btn-danger"
-                       onclick="return confirm('Delete this category?')">
-                        Delete
-                    </a>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addSubModal<?= $mainCat['id'] ?>">
+                        <i class="fa fa-plus"></i> Sub
+                    </button>
+                    <a href="?toggle=<?= $mainCat['id'] ?>" class="btn btn-sm btn-info text-white" title="Toggle Status"><i class="fa fa-power-off"></i></a>
+                    <a href="?delete=<?= $mainCat['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this category?')" title="Delete"><i class="fa fa-trash"></i></a>
                 </td>
             </tr>
 
-            <!-- SUBCATEGORY ROWS -->
+            <!-- Subcategory Rows -->
             <?php foreach ($subs as $s): ?>
                 <tr>
-                    <td>— <?= htmlspecialchars($s['name']) ?></td>
-                    <td><em>Subcategory</em></td>
-                    <td>
-                        <?= ($s['status'])
-                            ? '<span class="badge bg-success">Active</span>'
-                            : '<span class="badge bg-secondary">Disabled</span>' ?>
+                    <td class="ps-5">
+                        <i class="fa fa-level-up-alt fa-rotate-90 me-2 text-muted"></i><?= htmlspecialchars($s['name']) ?>
                     </td>
                     <td>
-                        <a href="?toggle=<?= $s['id'] ?>" class="btn btn-sm btn-info">Enable/Disable</a>
-
-                        <a href="?delete=<?= $s['id'] ?>" 
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Delete this subcategory?')">
-                            Delete
-                        </a>
+                        <?= ($s['status'] == 1)
+                            ? '<span class="badge bg-success">Active</span>'
+                            : '<span class="badge bg-secondary">Inactive</span>' ?>
+                    </td>
+                    <td>
+                        <a href="?toggle=<?= $s['id'] ?>" class="btn btn-sm btn-info text-white" title="Toggle Status"><i class="fa fa-power-off"></i></a>
+                        <a href="?delete=<?= $s['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this subcategory?')" title="Delete"><i class="fa fa-trash"></i></a>
                     </td>
                 </tr>
             <?php endforeach; ?>
+
+            <!-- Modal for Adding Subcategory specifically to this Main Cat -->
+            <div class="modal fade" id="addSubModal<?= $mainCat['id'] ?>" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="post">
+                            <input type="hidden" name="action" value="add_category">
+                            <input type="hidden" name="parent_id" value="<?= $mainCat['id'] ?>">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Add Subcategory to <?= htmlspecialchars($mainCat['name']) ?></h5>
+                                <button class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <label class="form-label">Subcategory Name</label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
         <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 
-<!-- ADD CATEGORY MODAL -->
+<!-- ADD CATEGORY MODAL (General) -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -167,7 +183,7 @@ $mainCats = array_filter($cats, fn($c) => $c['parent_id'] === NULL);
         <input type="hidden" name="action" value="add_category">
 
         <div class="modal-header">
-          <h5 class="modal-title">Add Category / Subcategory</h5>
+          <h5 class="modal-title">Add Category</h5>
           <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
 

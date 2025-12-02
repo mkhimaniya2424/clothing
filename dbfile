@@ -1,0 +1,275 @@
+/* ============================================================
+   ADMIN
+============================================================ */
+CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255),
+    email VARCHAR(255),
+    mobile VARCHAR(20),
+    profile_pic VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   BRANDS
+============================================================ */
+CREATE TABLE brands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    logo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   CATEGORIES
+============================================================ */
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    parent_id INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('active','inactive') DEFAULT 'active'
+);
+
+/* ============================================================
+   MESSAGES (newsletter / inquiries)
+============================================================ */
+CREATE TABLE messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    from_user VARCHAR(255),
+    email VARCHAR(255),
+    subject VARCHAR(255),
+    message TEXT,
+    status ENUM('pending','read','replied') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   PROMOTIONS (merged offers + coupons)
+============================================================ */
+CREATE TABLE promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    code VARCHAR(50) UNIQUE NULL, 
+    discount_percentage DECIMAL(10,2) NULL,
+    discount_amount DECIMAL(10,2) NULL,
+    start_date DATE,
+    end_date DATE,
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   PRODUCTS
+============================================================ */
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    category_main INT,
+    category_sub INT,
+    category_type INT,
+    category_brand INT,
+    sizes VARCHAR(255),
+    fabric VARCHAR(255),
+    highlight TEXT,
+    description TEXT,
+    images TEXT,
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   PRODUCT STOCK
+============================================================ */
+CREATE TABLE product_stock (
+    product_id INT PRIMARY KEY,
+    stock INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   USERS
+============================================================ */
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    profile_pic VARCHAR(255),
+    gender VARCHAR(20),
+    dob DATE,
+    status ENUM('active','inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   USER ADDRESS
+============================================================ */
+CREATE TABLE user_address (
+    address_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    address_line1 VARCHAR(255),
+    address_line2 VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255),
+    postal_code VARCHAR(20),
+    country VARCHAR(100),
+    address_type ENUM('home','work','other') DEFAULT 'home',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+/* ============================================================
+   WISHLIST
+============================================================ */
+CREATE TABLE wishlist (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   CART
+============================================================ */
+CREATE TABLE cart (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   RATING & REVIEWS
+============================================================ */
+CREATE TABLE rating_reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    product_id INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    review TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   CONTACT
+============================================================ */
+CREATE TABLE contact (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    email VARCHAR(255),
+    subject VARCHAR(255),
+    message TEXT,
+    status ENUM('pending','replied') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+/* ============================================================
+   ORDERS
+============================================================ */
+CREATE TABLE orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    address_id INT NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0,
+    final_amount DECIMAL(10,2) NOT NULL,
+    payment_status ENUM('pending','paid','failed','refunded') DEFAULT 'pending',
+    order_status ENUM('pending','confirmed','packed','shipped','delivered','cancelled')
+        DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (address_id) REFERENCES user_address(address_id)
+);
+
+/* ============================================================
+   PAYMENT DETAILS
+============================================================ */
+CREATE TABLE payment_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    payment_method ENUM('cod','card','upi','netbanking','wallet') NOT NULL,
+    transaction_id VARCHAR(255),
+    amount DECIMAL(10,2) NOT NULL,
+    payment_status ENUM('pending','success','failed') DEFAULT 'pending',
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+
+/* ============================================================
+   ORDER ITEMS
+============================================================ */
+CREATE TABLE order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    total DECIMAL(10,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   SHIPPING
+============================================================ */
+CREATE TABLE shipping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    courier VARCHAR(100),
+    tracking_number VARCHAR(200),
+    status ENUM('pending','shipped','in_transit','delivered','failed') DEFAULT 'pending',
+    shipped_at DATETIME,
+    delivered_at DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+
+/* ============================================================
+   RETURNS
+============================================================ */
+CREATE TABLE returns (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    reason TEXT,
+    status ENUM('requested','approved','rejected','received','refunded')
+        DEFAULT 'requested',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (order_id) REFERENCES orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+/* ============================================================
+   REFUNDS
+============================================================ */
+CREATE TABLE refunds (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    return_id INT NOT NULL,
+    order_id INT NOT NULL,
+    refund_amount DECIMAL(10,2) NOT NULL,
+    refund_method ENUM('original_payment','wallet','manual') DEFAULT 'original_payment',
+    status ENUM('initiated','completed','failed') DEFAULT 'initiated',
+    processed_at DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (return_id) REFERENCES returns(id),
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+);

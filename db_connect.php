@@ -52,29 +52,6 @@ $create_address_table = "CREATE TABLE IF NOT EXISTS user_address (
 
 $create_admin_table = "CREATE TABLE IF NOT EXISTS admin (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    full_name VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
-
-$create_categories_table = "CREATE TABLE IF NOT EXISTS categories (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    image VARCHAR(255),
-    status ENUM('active','inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
-
-$create_products_table = "CREATE TABLE IF NOT EXISTS products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    category_id INT,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    price DECIMAL(10,2) NOT NULL,
-    image VARCHAR(255),
-    stock INT DEFAULT 0,
     status ENUM('active','inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -175,5 +152,44 @@ if (isset($_GET['setup_db'])) {
 
     if (mysqli_query($con, $create_offers_table)) echo "✅ Table 'offers' created/checked successfully.<br>";
     else echo "❌ Error creating 'offers' table: " . mysqli_error($con) . "<br>";
+
+    if (mysqli_query($con, $create_visitors_table)) echo "✅ Table 'visitors' created/checked successfully.<br>";
+    else echo "❌ Error creating 'visitors' table: " . mysqli_error($con) . "<br>";
+    if (mysqli_query($con, $create_visitors_table)) echo "✅ Table 'visitors' created/checked successfully.<br>";
+    else echo "❌ Error creating 'visitors' table: " . mysqli_error($con) . "<br>";
+
+    // Coupons Table
+    $create_coupons_table = "CREATE TABLE IF NOT EXISTS coupons (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        code VARCHAR(50) UNIQUE NOT NULL,
+        discount_type ENUM('percentage', 'fixed') DEFAULT 'percentage',
+        discount_value DECIMAL(10,2) NOT NULL,
+        min_purchase_amount DECIMAL(10,2) DEFAULT 0,
+        max_discount DECIMAL(10,2) NULL,
+        usage_limit INT DEFAULT NULL,
+        used_count INT DEFAULT 0,
+        valid_from DATE NOT NULL,
+        valid_until DATE NOT NULL,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+    if (mysqli_query($con, $create_coupons_table)) echo "✅ Table 'coupons' created/checked successfully.<br>";
+    else echo "❌ Error creating 'coupons' table: " . mysqli_error($con) . "<br>";
+
+    // User Verification Table
+    $create_verification_table = "CREATE TABLE IF NOT EXISTS user_verification (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        email_otp VARCHAR(6),
+        email_otp_expiry DATETIME,
+        email_verified TINYINT(1) DEFAULT 0,
+        email_verified_at TIMESTAMP NULL,
+        reset_token VARCHAR(255) NULL,
+        reset_token_expiry DATETIME NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )";
+    if (mysqli_query($con, $create_verification_table)) echo "✅ Table 'user_verification' created/checked successfully.<br>";
+    else echo "❌ Error creating 'user_verification' table: " . mysqli_error($con) . "<br>";
 }
 ?>

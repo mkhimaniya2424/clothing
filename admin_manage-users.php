@@ -1,85 +1,67 @@
 <?php
-$title_page = "Manage Users";
 ob_start();
-include_once("db_connect.php");
+require_once 'db_connect.php';
 
-// Handle Delete
+$msg = '';
+
+// Delete User
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    mysqli_query($con, "DELETE FROM users WHERE id=$id");
-    header("Location: admin_manage-users.php");
-    exit;
+    $con->query("DELETE FROM users WHERE id=$id");
+    $msg = "User deleted.";
 }
 
-// Handle Status Change
-if (isset($_GET['status']) && isset($_GET['id'])) {
-    $id = intval($_GET['id']);
-    $status = $_GET['status'] == 'active' ? 'active' : 'inactive';
-    mysqli_query($con, "UPDATE users SET status='$status' WHERE id=$id");
-    header("Location: admin_manage-users.php");
-    exit;
+// Toggle Status
+if (isset($_GET['toggle'])) {
+    $id = intval($_GET['toggle']);
+    $con->query("UPDATE users SET status = IF(status='active','inactive','active') WHERE id=$id");
+    $msg = "User status updated.";
 }
 
-$users = mysqli_query($con, "SELECT * FROM users ORDER BY created_at DESC");
+// Fetch Users
+$users = $con->query("SELECT * FROM users ORDER BY id DESC");
 ?>
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Manage Users</h2>
-    </div>
+<div class="container mt-4">
+    <h3>Manage Users</h3>
+    
+    <?php if ($msg): ?>
+        <div class="alert alert-info"><?= htmlspecialchars($msg) ?></div>
+    <?php endif; ?>
 
-    <div class="card shadow">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Status</th>
-                            <th>Joined</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while($row = mysqli_fetch_assoc($users)): ?>
-                        <tr>
-                            <td>#<?= $row['id'] ?></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="bg-light rounded-circle p-2 me-2">
-                                        <i class="fa fa-user"></i>
-                                    </div>
-                                    <?= htmlspecialchars($row['username']) ?>
-                                </div>
-                            </td>
-                            <td><?= htmlspecialchars($row['email']) ?></td>
-                            <td><?= htmlspecialchars($row['phone']) ?></td>
-                            <td>
-                                <?php if($row['status'] == 'active'): ?>
-                                    <span class="badge bg-success">Active</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger">Inactive</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= date('M d, Y', strtotime($row['created_at'])) ?></td>
-                            <td>
-                                <?php if($row['status'] == 'active'): ?>
-                                    <a href="?id=<?= $row['id'] ?>&status=inactive" class="btn btn-sm btn-warning" title="Deactivate"><i class="fa fa-ban"></i></a>
-                                <?php else: ?>
-                                    <a href="?id=<?= $row['id'] ?>&status=active" class="btn btn-sm btn-success" title="Activate"><i class="fa fa-check"></i></a>
-                                <?php endif; ?>
-                                <a href="?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')" title="Delete"><i class="fa fa-trash"></i></a>
-                            </td>
-                        </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Joined At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while($row = $users->fetch_assoc()): ?>
+            <tr>
+                <td><?= $row['id'] ?></td>
+                <td><?= htmlspecialchars($row['username']) ?></td>
+                <td><?= htmlspecialchars($row['email']) ?></td>
+                <td><?= htmlspecialchars($row['phone']) ?></td>
+                <td>
+                    <span class="badge <?= $row['status'] === 'active' ? 'bg-success' : 'bg-secondary' ?>">
+                        <?= ucfirst($row['status']) ?>
+                    </span>
+                </td>
+                <td><?= $row['created_at'] ?></td>
+                <td>
+                    <a href="?toggle=<?= $row['id'] ?>" class="btn btn-sm btn-info text-white">Toggle Status</a>
+                    <a href="?delete=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete user?')">Delete</a>
+                </td>
+            </tr>
+            <?php endwhile; ?>
+        </tbody>
+    </table>
 </div>
 
 <?php

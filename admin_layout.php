@@ -122,6 +122,8 @@ if ($res) {
     <a href="admin_manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
     <a href="admin_manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
     <a href="admin_manage-visitors.php" class="sidebar-link"><i class="fa fa-users-cog me-2"></i>Visitors</a>
+    <a href="admin_manage-reviews.php" class="sidebar-link"><i class="fa fa-star me-2"></i>Manage Reviews</a>
+
     <a href="admin_revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>
 </div>
 
