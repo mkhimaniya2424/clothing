@@ -1,7 +1,7 @@
 <?php
 ob_start();
 require_once 'admin_auth.php';
-include_once("db_connect.php");
+include_once("../db_connect.php");
 
 // SAFE COUNT FUNCTION (returns 0 if table does not exist)
 function safeCount($con, $table) {

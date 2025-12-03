@@ -1,5 +1,8 @@
 <?php
 ob_start();
+session_start();
+require_once 'db_connect.php';
+require_once 'session_helper.php';
 $title_page = "Home";
 ?>
 
@@ -53,8 +56,6 @@ $title_page = "Home";
     <h2 class="text-center fw-bold mb-4">Featured Collections</h2>
     <div class="row g-4">
         <?php 
-        require_once 'db_connect.php';
-
         // Fetch 4 random active products
         $featRes = $con->query("SELECT * FROM products WHERE status='active' ORDER BY RAND() LIMIT 4");
 

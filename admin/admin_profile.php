@@ -8,7 +8,7 @@ if (!isset($_SESSION['admin'])) {
     exit;
 }
 
-include_once("db_connect.php");
+include_once("../db_connect.php");
 
 // Fetch admin data
 $admin_id = $_SESSION['admin']['id'];

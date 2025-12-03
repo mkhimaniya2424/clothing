@@ -1,5 +1,18 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
+
+// Visitor Tracking
+if (isset($con)) {
+    $visitor_ip = $_SERVER['REMOTE_ADDR'];
+    $visit_date = date('Y-m-d');
+    $check_visitor = $con->query("SELECT id FROM visitors WHERE ip_address='$visitor_ip' AND visit_date='$visit_date'");
+    if ($check_visitor && $check_visitor->num_rows == 0) {
+        $current_page = $_SERVER['REQUEST_URI'];
+        $visit_time = date('H:i:s');
+        $con->query("INSERT INTO visitors (ip_address, visit_date, visit_time, page_url) VALUES ('$visitor_ip', '$visit_date', '$visit_time', '$current_page')");
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -215,11 +228,11 @@ if (session_status() === PHP_SESSION_NONE) session_start();
                 <i class="fa-regular fa-user"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" aria-labelledby="userMenu">
-                <?php if(!isset($_SESSION['user_id'])): ?>
+                <?php if(!isset($_SESSION['user'])): ?>
                     <li><a class="dropdown-item" href="register.php"><i class="fa fa-user-plus me-2"></i>Register</a></li>
                     <li><a class="dropdown-item" href="login.php"><i class="fa fa-sign-in-alt me-2"></i>Login</a></li>
                 <?php else: ?>
-                    <li class="dropdown-header fw-bold">Hello, <?= htmlspecialchars($_SESSION['username'] ?? 'User'); ?></li>
+                    <li class="dropdown-header fw-bold">Hello, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'User'); ?></li>
                     <li><a class="dropdown-item" href="profile.php"><i class="fa fa-user me-2"></i>Profile</a></li>
                     <li><a class="dropdown-item" href="orders.php"><i class="fa fa-box me-2"></i>My Orders</a></li>
                     <li><hr class="dropdown-divider"></li>

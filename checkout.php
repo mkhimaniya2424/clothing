@@ -2,23 +2,20 @@
 ob_start();
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once 'db_connect.php';
+require_once 'session_helper.php';
 
 $title_page = "Checkout";
 
-// ---------------------------------------
-// CHECK IF USER IS LOGGED IN
-// ---------------------------------------
-if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
-    exit();
-}
+// Require login
+requireLogin('checkout.php');
 
-$user_id = $_SESSION['user']['id'];
+$user_id = getUserId();
 
 // Default values
 $name = "";
 $email = "";
 $address_text = "";
+$address_id = null;
 
 // ---------------------------------------
 // FETCH USER DETAILS
@@ -43,26 +40,114 @@ $a_stmt->execute();
 $a_result = $a_stmt->get_result();
 
 if ($a_row = $a_result->fetch_assoc()) {
+    $address_id = $a_row['address_id'];
     $address_text =
         $a_row['address_line1'] . ", " .
+        ($a_row['address_line2'] ? $a_row['address_line2'] . ", " : "") .
         $a_row['city'] . ", " .
         $a_row['state'] . " - " .
-        $a_row['postal_code'];
+        $a_row['postal_code'] . ", " .
+        $a_row['country'];
 }
 $a_stmt->close();
 
-
 // ---------------------------------------
-// Fetch cart items (required)
-// Replace this with your actual cart logic
+// FETCH CART ITEMS FROM DATABASE
 // ---------------------------------------
-
-$cartItems = $_SESSION['cart'] ?? [];
+$cartItems = [];
 $total = 0;
 
-foreach ($cartItems as $item) {
-    $total += $item['subtotal'];
+$sql = "SELECT c.quantity, p.* FROM cart c 
+        JOIN products p ON c.product_id = p.id 
+        WHERE c.user_id = ?";
+$stmt = $con->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$res = $stmt->get_result();
+
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $qty = $row['quantity'];
+        $subtotal = $row['price'] * $qty;
+        $total += $subtotal;
+        
+        $img = "https://via.placeholder.com/100";
+        if (!empty($row['images'])) {
+            $decoded = json_decode($row['images'], true);
+            if ($decoded && isset($decoded[0])) $img = $decoded[0];
+        }
+        
+        $cartItems[] = [
+            'id' => $row['id'],
+            'title' => $row['title'],
+            'price' => $row['price'],
+            'qty' => $qty,
+            'subtotal' => $subtotal,
+            'image' => $img
+        ];
+    }
 }
+$stmt->close();
+
+// If cart is empty, redirect to cart page
+if (empty($cartItems)) {
+    header("Location: cart.php");
+    exit();
+}
+
+// ---------------------------------------
+// FETCH ACTIVE OFFERS & COUPONS
+// ---------------------------------------
+$currentDate = date('Y-m-d');
+$discount_amount = 0;
+$applied_offer = null;
+$coupon_code = isset($_GET['coupon']) ? trim($_GET['coupon']) : '';
+$coupon_error = '';
+$coupon_success = '';
+
+// 1. Check for Coupon Code if provided
+if (!empty($coupon_code)) {
+    $stmt = $con->prepare("SELECT * FROM promotions WHERE code = ? AND status='active' AND start_date <= ? AND end_date >= ?");
+    $stmt->bind_param("sss", $coupon_code, $currentDate, $currentDate);
+    $stmt->execute();
+    $promoRes = $stmt->get_result();
+    
+    if ($promoRes && $promoRes->num_rows > 0) {
+        $applied_offer = $promoRes->fetch_assoc();
+        
+        // Calculate discount
+        if ($applied_offer['discount_percentage'] > 0) {
+            $discount_amount = ($total * $applied_offer['discount_percentage']) / 100;
+        } elseif ($applied_offer['discount_amount'] > 0) {
+            $discount_amount = $applied_offer['discount_amount'];
+        }
+        
+        $coupon_success = "Coupon '{$applied_offer['code']}' applied successfully!";
+    } else {
+        $coupon_error = "Invalid or expired coupon code.";
+        $coupon_code = ''; // Reset invalid code
+    }
+    $stmt->close();
+}
+
+// 2. If no coupon applied, check for automatic offers (highest discount)
+if (!$applied_offer) {
+    $offerSql = "SELECT * FROM offers WHERE status='active' AND start_date <= '$currentDate' AND end_date >= '$currentDate' ORDER BY discount_percentage DESC LIMIT 1";
+    $offerRes = $con->query($offerSql);
+
+    if ($offerRes && $offerRes->num_rows > 0) {
+        $applied_offer = $offerRes->fetch_assoc();
+        $discount_percentage = $applied_offer['discount_percentage'];
+        $discount_amount = ($total * $discount_percentage) / 100;
+    }
+}
+
+// Ensure discount doesn't exceed total
+if ($discount_amount > $total) {
+    $discount_amount = $total;
+}
+
+$final_amount = $total - $discount_amount;
 ?>
 
 <section class="container py-5">
@@ -72,7 +157,7 @@ foreach ($cartItems as $item) {
         <div class="col-md-8">
             <h5 class="mb-3">Billing Details</h5>
 
-            <form action="order_place.php" method="POST">
+            <form action="order_place.php" method="POST" id="checkoutForm">
                 <div class="mb-3">
                     <label class="fw-bold">Full Name</label>
                     <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($name) ?>" required>
@@ -90,15 +175,46 @@ foreach ($cartItems as $item) {
 
                 <div class="mb-3">
                     <label class="fw-bold">Payment Method</label>
-                    <select name="payment" class="form-control" required>
+                    <select name="payment_method" id="payment_method" class="form-control" required onchange="togglePaymentFields()">
+                        <option value="">Select Payment Method</option>
                         <option value="cod">Cash on Delivery</option>
-                        <option value="online">Online Payment (Dummy)</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="netbanking">Net Banking</option>
                     </select>
                 </div>
 
-                <input type="hidden" name="total_amount" value="<?= $total ?>">
+                <!-- DYNAMIC PAYMENT FIELDS -->
+                <div id="upi_fields" class="mb-3 d-none p-3 bg-light rounded border">
+                    <label class="fw-bold">UPI ID</label>
+                    <input type="text" name="upi_id" class="form-control" placeholder="example@upi">
+                    <small class="text-muted">Enter your UPI ID (Google Pay, PhonePe, Paytm, etc.)</small>
+                </div>
 
-                <button type="submit" class="btn btn-dark w-100 btn-lg">Place Order</button>
+                <div id="card_fields" class="mb-3 d-none p-3 bg-light rounded border">
+                    <div class="mb-3">
+                        <label class="fw-bold">Card Number</label>
+                        <input type="text" name="card_number" class="form-control" placeholder="XXXX XXXX XXXX XXXX">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold">Expiry Date</label>
+                            <input type="text" name="card_expiry" class="form-control" placeholder="MM/YY">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="fw-bold">CVV</label>
+                            <input type="password" name="card_cvv" class="form-control" placeholder="123">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="total_amount" value="<?= $total ?>">
+                <input type="hidden" name="discount_amount" value="<?= $discount_amount ?>">
+                <input type="hidden" name="final_amount" value="<?= $final_amount ?>">
+                <input type="hidden" name="address_id" value="<?= $address_id ?>">
+                <input type="hidden" name="coupon_code" value="<?= htmlspecialchars($coupon_code) ?>">
+
+                <button type="submit" class="btn btn-dark w-100 btn-lg mt-3">Place Order</button>
             </form>
         </div>
 
@@ -119,9 +235,54 @@ foreach ($cartItems as $item) {
                             </li>
                         <?php endforeach; ?>
 
-                        <li class="list-group-item d-flex justify-content-between px-0 fw-bold">
-                            <span>Total (INR)</span>
+                        <li class="list-group-item d-flex justify-content-between px-0">
+                            <span>Subtotal</span>
                             <span>₹<?= number_format($total, 2) ?></span>
+                        </li>
+
+                        <li class="list-group-item px-0">
+                            <!-- AVAILABLE COUPONS MESSAGE -->
+                            <?php
+                            $availPromoSql = "SELECT * FROM promotions WHERE status='active' AND start_date <= '$currentDate' AND end_date >= '$currentDate' AND code != ''";
+                            $availPromoRes = $con->query($availPromoSql);
+                            if ($availPromoRes && $availPromoRes->num_rows > 0):
+                            ?>
+                                <div class="alert alert-info p-2 mb-2 small">
+                                    <strong>Available Coupons:</strong><br>
+                                    <?php while($p = $availPromoRes->fetch_assoc()): ?>
+                                        <span class="badge bg-white text-dark border me-1 mb-1">
+                                            <?= htmlspecialchars($p['code']) ?>
+                                        </span>
+                                        <span class="text-muted">
+                                            - Get <?= $p['discount_percentage'] > 0 ? intval($p['discount_percentage']).'% Off' : '₹'.intval($p['discount_amount']).' Off' ?>
+                                        </span><br>
+                                    <?php endwhile; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="" method="GET" class="d-flex gap-2">
+                                <input type="text" name="coupon" class="form-control form-control-sm" placeholder="Coupon Code" value="<?= htmlspecialchars($coupon_code) ?>">
+                                <button type="submit" class="btn btn-outline-dark btn-sm">Apply</button>
+                            </form>
+                            <?php if ($coupon_error): ?>
+                                <small class="text-danger"><?= $coupon_error ?></small>
+                            <?php endif; ?>
+                            <?php if ($coupon_success): ?>
+                                <small class="text-success"><?= $coupon_success ?></small>
+                            <?php endif; ?>
+                        </li>
+
+
+                        <?php if ($discount_amount > 0): ?>
+                            <li class="list-group-item d-flex justify-content-between px-0 text-success">
+                                <span>Discount (<?= htmlspecialchars($applied_offer['title'] ?? $applied_offer['code']) ?>)</span>
+                                <span>-₹<?= number_format($discount_amount, 2) ?></span>
+                            </li>
+                        <?php endif; ?>
+
+                        <li class="list-group-item d-flex justify-content-between px-0 fw-bold fs-5">
+                            <span>Total (INR)</span>
+                            <span>₹<?= number_format($final_amount, 2) ?></span>
                         </li>
                     </ul>
 
@@ -130,6 +291,30 @@ foreach ($cartItems as $item) {
         </div>
     </div>
 </section>
+
+<script>
+function togglePaymentFields() {
+    const method = document.getElementById('payment_method').value;
+    const upiFields = document.getElementById('upi_fields');
+    const cardFields = document.getElementById('card_fields');
+    
+    // Reset
+    upiFields.classList.add('d-none');
+    cardFields.classList.add('d-none');
+    
+    // Remove required attributes to prevent validation errors on hidden fields
+    document.querySelectorAll('#upi_fields input').forEach(i => i.required = false);
+    document.querySelectorAll('#card_fields input').forEach(i => i.required = false);
+
+    if (method === 'upi') {
+        upiFields.classList.remove('d-none');
+        document.querySelector('input[name="upi_id"]').required = true;
+    } else if (method === 'card') {
+        cardFields.classList.remove('d-none');
+        document.querySelectorAll('#card_fields input').forEach(i => i.required = true);
+    }
+}
+</script>
 
 <?php
 $content = ob_get_clean();

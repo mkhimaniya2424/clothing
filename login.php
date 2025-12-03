@@ -5,9 +5,12 @@ require_once 'db_connect.php';
 $title_page = "Login";
 $error = "";
 
-// If already logged in → redirect to home
+// Get redirect parameter
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'home.php';
+
+// If already logged in → redirect
 if (isset($_SESSION['user'])) {
-    header("Location: home.php");
+    header("Location: " . $redirect);
     exit();
 }
 
@@ -45,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'ua' => $_SERVER['HTTP_USER_AGENT'] ?? ''
                 ];
 
-                header("Location: home.php");
+                header("Location: " . $redirect);
                 exit();
 
             } else {

@@ -1,6 +1,6 @@
 <?php
 ob_start();
-include_once("db_connect.php");
+include_once("../db_connect.php");
 
 // Prepare notifications array
 $notifications = [];

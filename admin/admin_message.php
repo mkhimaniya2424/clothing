@@ -1,6 +1,6 @@
 <?php
 ob_start();
-require_once 'db_connect.php';
+require_once '../db_connect.php';
 
 // Mark message as read/unread
 if (isset($_GET['toggle_id'])) {

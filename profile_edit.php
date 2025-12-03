@@ -3,13 +3,17 @@ ob_start();
 session_start();
 require_once 'db_connect.php';
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['user'])) {
     header("Location: login.php");
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user']['id'];
 $msg = "";
+$msg_type = "info";
+$title_page = "Edit Profile";
+
+
 
 // Handle Update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,11 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if ($con->query($a_sql)) {
         $msg = "Profile updated successfully!";
+        $msg_type = "success";
         // Refresh user data
     } else {
         $msg = "Error updating profile: " . $con->error;
+        $msg_type = "danger";
     }
 }
+
 
 // Fetch Current Data
 $u_res = $con->query("SELECT * FROM users WHERE id='$user_id'");
@@ -61,7 +68,7 @@ $address = $a_res->fetch_assoc();
                 </div>
                 <div class="card-body p-4">
                     <?php if($msg): ?>
-                        <div class="alert alert-success"><?= $msg ?></div>
+                        <div class="alert alert-<?= $msg_type ?>"><?= $msg ?></div>
                     <?php endif; ?>
 
                     <form method="POST">

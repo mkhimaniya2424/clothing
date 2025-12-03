@@ -13,7 +13,7 @@ if (!isset($_SESSION['admin'])) {
 $notificationCount = 0;
 
 $unreadCount = 0;
-include_once("db_connect.php");
+include_once("../db_connect.php");
 $res = $con->query("SELECT COUNT(*) as cnt FROM messages WHERE status='unread'");
 if ($res) {
     $unreadCount = $res->fetch_assoc()['cnt'];
@@ -27,16 +27,16 @@ if ($res) {
 <title>Admin - Clothing Brand</title>
 
 <!-- Bootstrap -->
-<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="../css/bootstrap.min.css">
 
 <!-- Font Awesome -->
-<link rel="stylesheet" href="fontawesome/css/all.min.css">
+<link rel="stylesheet" href="../fontawesome/css/all.min.css">
 
 <!-- Custom CSS -->
-<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="../css/admin.css">
 
-<script src="js/jquery-3.7.1.min.js"></script>
-<script src="js/bootstrap.bundle.min.js"></script>
+<script src="../js/jquery-3.7.1.min.js"></script>
+<script src="../js/bootstrap.bundle.min.js"></script>
 
 <style>
 /* ----------------- Sidebar ------------------- */

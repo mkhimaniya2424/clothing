@@ -1,6 +1,6 @@
 <?php
 session_start();
-include_once("db_connect.php");
+include_once("../db_connect.php");
 
 // If already logged in, go to dashboard
 if (isset($_SESSION['admin'])) {

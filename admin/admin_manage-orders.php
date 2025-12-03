@@ -1,7 +1,7 @@
 <?php
 ob_start();
 require_once 'admin_auth.php';
-require_once 'db_connect.php';
+require_once '../db_connect.php';
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
@@ -46,7 +46,9 @@ if (!$orders) {
                         <tr>
                             <th>Order ID</th>
                             <th>Customer</th>
-                            <th>Amount</th>
+                            <th>Total</th>
+                            <th>Discount</th>
+                            <th>Final</th>
                             <th>Status</th>
                             <th>Date</th>
                             <th>Actions</th>
@@ -62,6 +64,8 @@ if (!$orders) {
                                     <small class="text-muted"><?= htmlspecialchars($row['email'] ?? '') ?></small>
                                 </td>
                                 <td>₹<?= number_format($row['total_amount'], 2) ?></td>
+                                <td class="text-success">-₹<?= number_format($row['discount_amount'], 2) ?></td>
+                                <td class="fw-bold">₹<?= number_format($row['final_amount'], 2) ?></td>
                                 <td>
                                     <?php
                                     $statusClass = 'bg-secondary';
@@ -118,7 +122,7 @@ if (!$orders) {
                                                     <?php
                                                     $oid = intval($row['id']);
                                                     $itemsQuery = "
-                                                        SELECT oi.*, p.name 
+                                                        SELECT oi.*, p.title as name 
                                                         FROM order_items oi 
                                                         LEFT JOIN products p ON oi.product_id = p.id 
                                                         WHERE oi.order_id = $oid

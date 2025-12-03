@@ -2,13 +2,12 @@
 ob_start();
 session_start();
 require_once 'db_connect.php';
+require_once 'session_helper.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
+// Require login
+requireLogin('cart.php');
 
-$user_id = $_SESSION['user_id'];
+$user_id = getUserId();
 
 // Handle Actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
