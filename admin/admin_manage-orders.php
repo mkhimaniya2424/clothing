@@ -71,7 +71,9 @@ if (!$orders) {
                                     $statusClass = 'bg-secondary';
                                     switch($row['order_status']) {
                                         case 'pending': $statusClass = 'bg-warning text-dark'; break;
+                                        case 'confirmed': $statusClass = 'bg-info text-dark'; break;
                                         case 'processing': $statusClass = 'bg-info text-dark'; break;
+                                        case 'packed': $statusClass = 'bg-primary'; break;
                                         case 'shipped': $statusClass = 'bg-primary'; break;
                                         case 'delivered': $statusClass = 'bg-success'; break;
                                         case 'cancelled': $statusClass = 'bg-danger'; break;
@@ -153,7 +155,9 @@ if (!$orders) {
                                                         <label class="form-label">Update Status</label>
                                                         <select name="status" class="form-select">
                                                             <option value="pending" <?= $row['order_status'] == 'pending' ? 'selected' : '' ?>>Pending</option>
+                                                            <option value="confirmed" <?= $row['order_status'] == 'confirmed' ? 'selected' : '' ?>>Confirmed</option>
                                                             <option value="processing" <?= $row['order_status'] == 'processing' ? 'selected' : '' ?>>Processing</option>
+                                                            <option value="packed" <?= $row['order_status'] == 'packed' ? 'selected' : '' ?>>Packed</option>
                                                             <option value="shipped" <?= $row['order_status'] == 'shipped' ? 'selected' : '' ?>>Shipped</option>
                                                             <option value="delivered" <?= $row['order_status'] == 'delivered' ? 'selected' : '' ?>>Delivered</option>
                                                             <option value="cancelled" <?= $row['order_status'] == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>

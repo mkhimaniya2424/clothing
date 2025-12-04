@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 03, 2025 at 04:49 AM
+-- Generation Time: Dec 03, 2025 at 06:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -44,7 +44,7 @@ CREATE TABLE `admin` (
 
 INSERT INTO `admin` (`id`, `username`, `password`, `full_name`, `email`, `mobile`, `profile_pic`, `created_at`) VALUES
 (1, 'admin', '*01A6717B58FF5C7EAFFF6CB7C96F7428EA65FE4C', 'Administrator', 'admin@gmail.com', '6438729156', NULL, '2025-12-01 10:57:09'),
-(2, 'mkahir', '*D60F7A384C2A142617C9BE10EC1E4A125E569D77', 'meghana', 'meghanaahir1@gmail.com', '9099112070', 'admin_2_1764662651.jpg', '2025-12-01 10:57:47'),
+(2, 'mkahir', '*D60F7A384C2A142617C9BE10EC1E4A125E569D77', 'meghana', 'meghanaahir1@gmail.com', '9099112070', 'admin_2_1764734698.jpg', '2025-12-01 10:57:47'),
 (3, 'sakshi', '*42C6B814A52F1AED6CC6B9A7FED6CB35853D2DED', 'sakshi vyas', NULL, NULL, NULL, '2025-12-01 10:58:17');
 
 -- --------------------------------------------------------
@@ -181,6 +181,17 @@ CREATE TABLE `orders` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `user_id`, `shipping_address`, `address_id`, `total_amount`, `discount_amount`, `final_amount`, `payment_method`, `payment_status`, `order_status`, `created_at`, `updated_at`) VALUES
+(2, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'cod', 'pending', 'pending', '2025-12-03 04:11:04', '2025-12-03 04:11:04'),
+(3, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'upi', 'pending', 'cancelled', '2025-12-03 04:31:35', '2025-12-03 04:31:49'),
+(4, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'upi', 'pending', 'shipped', '2025-12-03 04:47:11', '2025-12-03 05:31:30'),
+(5, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 200.00, 800.00, 'upi', 'pending', 'delivered', '2025-12-03 04:53:47', '2025-12-03 05:31:25'),
+(6, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 200.00, 800.00, 'cod', 'pending', 'delivered', '2025-12-03 05:16:40', '2025-12-03 05:31:16');
+
 -- --------------------------------------------------------
 
 --
@@ -197,6 +208,17 @@ CREATE TABLE `order_items` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`, `total`, `created_at`) VALUES
+(1, 2, 1, 1, 1000.00, 1000.00, '2025-12-03 04:11:04'),
+(2, 3, 1, 1, 1000.00, 1000.00, '2025-12-03 04:31:35'),
+(3, 4, 1, 1, 1000.00, 1000.00, '2025-12-03 04:47:11'),
+(4, 5, 1, 1, 1000.00, 1000.00, '2025-12-03 04:53:47'),
+(5, 6, 1, 1, 1000.00, 1000.00, '2025-12-03 05:16:40');
+
 -- --------------------------------------------------------
 
 --
@@ -212,6 +234,17 @@ CREATE TABLE `payment_details` (
   `payment_status` enum('pending','success','failed') DEFAULT 'pending',
   `payment_date` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `payment_details`
+--
+
+INSERT INTO `payment_details` (`id`, `order_id`, `payment_method`, `transaction_id`, `amount`, `payment_status`, `payment_date`) VALUES
+(1, 2, 'cod', NULL, 1000.00, 'pending', '2025-12-03 04:11:04'),
+(2, 3, 'upi', NULL, 1000.00, 'pending', '2025-12-03 04:31:35'),
+(3, 4, 'upi', NULL, 1000.00, 'pending', '2025-12-03 04:47:11'),
+(4, 5, 'upi', NULL, 800.00, 'pending', '2025-12-03 04:53:47'),
+(5, 6, 'cod', NULL, 800.00, 'pending', '2025-12-03 05:16:40');
 
 -- --------------------------------------------------------
 
@@ -260,7 +293,7 @@ CREATE TABLE `product_stock` (
 --
 
 INSERT INTO `product_stock` (`product_id`, `stock`) VALUES
-(1, 0);
+(1, 2);
 
 -- --------------------------------------------------------
 
@@ -287,7 +320,7 @@ CREATE TABLE `promotions` (
 --
 
 INSERT INTO `promotions` (`id`, `title`, `description`, `code`, `discount_percentage`, `discount_amount`, `start_date`, `end_date`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'code', 'add code to get discount', 'MK123', 10.00, 0.00, '2025-12-02', '2025-12-05', 'active', '2025-12-02 14:18:26', '2025-12-02 14:18:26');
+(1, 'code', 'add code to get discount', 'MK123', 10.00, 0.00, '2025-12-02', '2025-12-05', 'inactive', '2025-12-02 14:18:26', '2025-12-03 05:08:47');
 
 -- --------------------------------------------------------
 
@@ -303,6 +336,13 @@ CREATE TABLE `rating_reviews` (
   `review` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `rating_reviews`
+--
+
+INSERT INTO `rating_reviews` (`id`, `user_id`, `product_id`, `rating`, `review`, `created_at`) VALUES
+(1, 1, 1, 4, 'nice', '2025-12-03 05:32:20');
 
 -- --------------------------------------------------------
 
@@ -329,7 +369,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `phone`, `profile_pic`, `gender`, `dob`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'megha', 'meghanaahir1@gmail.com', '$2y$10$YisDaXHw0O3cS3K/2onEo.4BtoMn1gRx27HrVOcAgOvlLz.OStldO', '9099112071', NULL, 'female', '2024-07-25', 'active', '2025-12-02 12:13:19', '2025-12-02 12:14:48');
+(1, 'megha', 'meghanaahir1@gmail.com', '$2y$10$6JZ1JQVT9F8XywttsbXW2OnmFnNLpHnwW.SPlnvUJmAD2zkRogmuC', '9099112071', NULL, 'female', '2024-07-25', 'active', '2025-12-02 12:13:19', '2025-12-03 04:46:16');
 
 -- --------------------------------------------------------
 
@@ -360,6 +400,52 @@ INSERT INTO `user_address` (`address_id`, `user_id`, `address_line1`, `address_l
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `user_verification`
+--
+
+CREATE TABLE `user_verification` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `reset_token` varchar(255) DEFAULT NULL,
+  `reset_token_expiry` datetime DEFAULT NULL,
+  `email_verified` tinyint(1) DEFAULT 0,
+  `verification_token` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_verification`
+--
+
+INSERT INTO `user_verification` (`id`, `user_id`, `reset_token`, `reset_token_expiry`, `email_verified`, `verification_token`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, NULL, 1, NULL, '2025-12-03 04:50:56', '2025-12-03 04:50:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `visitors`
+--
+
+CREATE TABLE `visitors` (
+  `id` int(11) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `visit_date` date NOT NULL,
+  `visit_time` time NOT NULL,
+  `page_url` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `visitors`
+--
+
+INSERT INTO `visitors` (`id`, `ip_address`, `visit_date`, `visit_time`, `page_url`, `created_at`) VALUES
+(1, '::1', '2025-12-03', '06:32:08', '/clothing/order_success.php?order_id=6', '2025-12-03 05:32:08');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wishlist`
 --
 
@@ -375,7 +461,7 @@ CREATE TABLE `wishlist` (
 --
 
 INSERT INTO `wishlist` (`id`, `user_id`, `product_id`, `created_at`) VALUES
-(4, 1, 1, '2025-12-02 12:52:59');
+(6, 1, 1, '2025-12-03 04:11:30');
 
 --
 -- Indexes for dumped tables
@@ -488,6 +574,21 @@ ALTER TABLE `user_address`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indexes for table `user_verification`
+--
+ALTER TABLE `user_verification`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id` (`user_id`),
+  ADD KEY `reset_token` (`reset_token`),
+  ADD KEY `verification_token` (`verification_token`);
+
+--
+-- Indexes for table `visitors`
+--
+ALTER TABLE `visitors`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `wishlist`
 --
 ALTER TABLE `wishlist`
@@ -515,7 +616,7 @@ ALTER TABLE `brands`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `categories`
@@ -539,19 +640,19 @@ ALTER TABLE `offers`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `payment_details`
 --
 ALTER TABLE `payment_details`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -569,7 +670,7 @@ ALTER TABLE `promotions`
 -- AUTO_INCREMENT for table `rating_reviews`
 --
 ALTER TABLE `rating_reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -584,10 +685,22 @@ ALTER TABLE `user_address`
   MODIFY `address_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `user_verification`
+--
+ALTER TABLE `user_verification`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `visitors`
+--
+ALTER TABLE `visitors`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `wishlist`
 --
 ALTER TABLE `wishlist`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -644,6 +757,12 @@ ALTER TABLE `rating_reviews`
 --
 ALTER TABLE `user_address`
   ADD CONSTRAINT `user_address_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_verification`
+--
+ALTER TABLE `user_verification`
+  ADD CONSTRAINT `user_verification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `wishlist`

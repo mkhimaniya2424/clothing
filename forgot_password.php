@@ -21,11 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($res->num_rows > 0) {
         $user = $res->fetch_assoc();
         $token = bin2hex(random_bytes(32));
-        $expiry = date("Y-m-d H:i:s", strtotime("+1 hour"));
         
-        // Update token
-        $upd = $con->prepare("UPDATE user_verification SET reset_token=?, reset_token_expiry=? WHERE user_id=?");
-        $upd->bind_param("ssi", $token, $expiry, $user['id']);
+        // Insert or Update token (handles cases where user_verification record doesn't exist)
+        // Using NOW() + INTERVAL to avoid timezone mismatch between PHP and MySQL
+        $upd = $con->prepare("INSERT INTO user_verification (user_id, reset_token, reset_token_expiry) 
+                              VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR)) 
+                              ON DUPLICATE KEY UPDATE reset_token=?, reset_token_expiry=DATE_ADD(NOW(), INTERVAL 1 HOUR)");
+        $upd->bind_param("iss", $user['id'], $token, $token);
         $upd->execute();
         
         // Send Email

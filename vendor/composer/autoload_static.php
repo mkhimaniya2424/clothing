@@ -17,7 +17,12 @@ class ComposerStaticInit4b55c7ef33235a0353c1b6b079f86964
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
+            'PhpOffice\\PhpWord\\' => 18,
             'PHPMailer\\PHPMailer\\' => 20,
+        ),
+        'L' =>
+        array (
+            'Laminas\\Escaper\\' => 16,
         ),
         'G' =>
         array (
@@ -37,9 +42,17 @@ class ComposerStaticInit4b55c7ef33235a0353c1b6b079f86964
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
+        'PhpOffice\\PhpWord\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/phpoffice/phpword/src/PhpWord',
+        ),
         'PHPMailer\\PHPMailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
+        ),
+        'Laminas\\Escaper\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/laminas/laminas-escaper/src',
         ),
         'GuzzleHttp\\Psr7\\' =>
         array (

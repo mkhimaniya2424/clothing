@@ -61,6 +61,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     throw new Exception("Error adding address: " . mysqli_error($con));
                 }
                 
+                // Insert into user_verification table (required for password reset and email verification)
+                $insert_verification = "INSERT INTO user_verification (user_id, email_verified) 
+                                       VALUES ('$user_id', 1)";
+                
+                if (!mysqli_query($con, $insert_verification)) {
+                    throw new Exception("Error creating verification record: " . mysqli_error($con));
+                }
+                
                 mysqli_commit($con);
                 $success = "Registration successful! You can now <a href='login.php'>login</a>.";
                 
