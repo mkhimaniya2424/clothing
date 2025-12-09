@@ -35,6 +35,41 @@ require_once 'db_connect.php';
 $user_id = $_SESSION['user']['id'];
 $title_page = "My Profile";
 
+// Handle profile photo upload
+$uploadMessage = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
+    $file = $_FILES['profile_photo'];
+    
+    if ($file['error'] === UPLOAD_ERR_OK) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        
+        if (in_array($fileExt, $allowed)) {
+            $uploadDir = __DIR__ . '/uploads/profiles/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+            
+            $newFileName = 'profile_' . $user_id . '_' . time() . '.' . $fileExt;
+            $destination = $uploadDir . $newFileName;
+            
+            if (move_uploaded_file($file['tmp_name'], $destination)) {
+                $photoPath = 'uploads/profiles/' . $newFileName;
+                
+                // Update database
+                $stmt = $con->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
+                $stmt->bind_param("si", $photoPath, $user_id);
+                $stmt->execute();
+                $stmt->close();
+                
+                $uploadMessage = 'Profile photo updated successfully!';
+            } else {
+                $uploadMessage = 'Error uploading photo.';
+            }
+        } else {
+            $uploadMessage = 'Only JPG, JPEG, PNG, GIF files are allowed.';
+        }
+    }
+}
+
 //---------------------------------------------
 // FETCH USER DETAILS
 //---------------------------------------------
@@ -53,55 +88,153 @@ $stmt2->execute();
 $address = $stmt2->get_result()->fetch_assoc();
 $stmt2->close();
 
+// Default profile photo
+$profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']) . '&size=200&background=667eea&color=fff';
+
 ob_start();
 ?>
 
+<style>
+.profile-photo-container {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
+}
+.profile-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+.photo-upload-btn {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    border: 3px solid white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.photo-upload-btn:hover {
+    background: #764ba2;
+    transform: scale(1.1);
+}
+.profile-card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+.profile-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px 20px;
+    color: white;
+    text-align: center;
+}
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-4">
-
-                <div class="d-flex align-items-center mb-4">
-                    <div class="bg-light rounded-circle p-3 me-3">
-                        <i class="fa fa-user fa-2x text-primary"></i>
-                    </div>
-                    <div>
-                        <h3 class="mb-0"><?= htmlspecialchars($user['username']) ?></h3>
-                        <p class="text-muted mb-0"><?= htmlspecialchars($user['email']) ?></p>
-                    </div>
+        <?php if ($uploadMessage): ?>
+            <div class="alert alert-info alert-dismissible fade show">
+                <?= htmlspecialchars($uploadMessage) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
+        
+        <div class="card shadow-sm border-0 mb-4 profile-card">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-photo-container">
+                    <img src="<?= htmlspecialchars($profilePhoto) ?>" alt="Profile Photo" class="profile-photo" id="profilePhotoPreview">
+                    <label for="profilePhotoInput" class="photo-upload-btn" title="Change Photo">
+                        <i class="fa fa-camera"></i>
+                    </label>
+                    <form method="POST" enctype="multipart/form-data" id="photoUploadForm" style="display: none;">
+                        <input type="file" name="profile_photo" id="profilePhotoInput" accept="image/*" onchange="document.getElementById('photoUploadForm').submit();">
+                    </form>
                 </div>
+                <h3 class="mb-1"><?= htmlspecialchars($user['username']) ?></h3>
+                <p class="mb-0 opacity-75"><?= htmlspecialchars($user['email']) ?></p>
+            </div>
 
-                <h5 class="text-primary mb-3">Personal Information</h5>
+            <div class="card-body p-4">
+                <h5 class="text-primary mb-3"><i class="fa fa-user me-2"></i>Personal Information</h5>
 
                 <div class="row mb-4">
-                    <div class="col-md-6 mb-2"><strong>Phone:</strong> <?= htmlspecialchars($user['phone'] ?? 'Not set') ?></div>
-                    <div class="col-md-6 mb-2"><strong>Gender:</strong> <?= ucfirst(htmlspecialchars($user['gender'] ?? 'Not set')) ?></div>
-                    <div class="col-md-6 mb-2"><strong>Date of Birth:</strong> <?= htmlspecialchars($user['dob'] ?? 'Not set') ?></div>
-                    <div class="col-md-6 mb-2">
-                        <strong>Status:</strong>
-                        <span class="badge bg-success"><?= ucfirst(htmlspecialchars($user['status'])) ?></span>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-phone text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Phone</small>
+                                <strong><?= htmlspecialchars($user['phone'] ?? 'Not set') ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-venus-mars text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Gender</small>
+                                <strong><?= ucfirst(htmlspecialchars($user['gender'] ?? 'Not set')) ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-birthday-cake text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Date of Birth</small>
+                                <strong><?= htmlspecialchars($user['dob'] ?? 'Not set') ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-check-circle text-muted me-2"></i>
+                            <div>
+                                <small class="text-muted d-block">Account Status</small>
+                                <span class="badge bg-success"><?= ucfirst(htmlspecialchars($user['status'])) ?></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <hr>
 
-                <h5 class="text-primary mb-3">Address Details</h5>
+                <h5 class="text-primary mb-3"><i class="fa fa-map-marker-alt me-2"></i>Address Details</h5>
 
                 <?php if ($address): ?>
-                    <p><strong><?= ucfirst($address['address_type']) ?>:</strong></p>
-                    <p>
-                        <?= htmlspecialchars($address['address_line1']) ?><br>
-                        <?= htmlspecialchars($address['address_line2'] ?? '') ?><br>
-                        <?= htmlspecialchars($address['city']) ?>, <?= htmlspecialchars($address['state']) ?> - <?= htmlspecialchars($address['postal_code']) ?><br>
-                        <?= htmlspecialchars($address['country']) ?>
-                    </p>
+                    <div class="bg-light p-3 rounded">
+                        <p class="mb-2"><strong><?= ucfirst($address['address_type']) ?> Address:</strong></p>
+                        <p class="mb-0">
+                            <?= htmlspecialchars($address['address_line1']) ?><br>
+                            <?= htmlspecialchars($address['address_line2'] ?? '') ?><br>
+                            <?= htmlspecialchars($address['city']) ?>, <?= htmlspecialchars($address['state']) ?> - <?= htmlspecialchars($address['postal_code']) ?><br>
+                            <?= htmlspecialchars($address['country']) ?>
+                        </p>
+                    </div>
                 <?php else: ?>
-                    <p class="text-muted">No address found.</p>
+                    <div class="alert alert-warning">
+                        <i class="fa fa-exclamation-triangle me-2"></i>No address found. Please add your address.
+                    </div>
                 <?php endif; ?>
 
-                <div class="mt-4 text-end">
-                    <a href="change_password.php" class="btn btn-outline-secondary btn-sm me-2">Change Password</a>
-                    <a href="profile_edit.php" class="btn btn-outline-primary btn-sm">Edit Profile</a>
+                <div class="mt-4 d-flex gap-2 justify-content-end">
+                    <a href="change_password.php" class="btn btn-outline-secondary">
+                        <i class="fa fa-key me-2"></i>Change Password
+                    </a>
+                    <a href="profile_edit.php" class="btn btn-primary">
+                        <i class="fa fa-edit me-2"></i>Edit Profile
+                    </a>
                 </div>
 
             </div>

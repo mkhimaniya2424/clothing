@@ -13,10 +13,41 @@ $msg = "";
 $msg_type = "info";
 $title_page = "Edit Profile";
 
-
+// Handle Profile Photo Upload
+if (isset($_FILES['profile_photo']) && $_FILES['profile_photo']['error'] === UPLOAD_ERR_OK) {
+    $file = $_FILES['profile_photo'];
+    $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+    $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    
+    if (in_array($fileExt, $allowed)) {
+        $uploadDir = __DIR__ . '/uploads/profiles/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+        
+        $newFileName = 'profile_' . $user_id . '_' . time() . '.' . $fileExt;
+        $destination = $uploadDir . $newFileName;
+        
+        if (move_uploaded_file($file['tmp_name'], $destination)) {
+            $photoPath = 'uploads/profiles/' . $newFileName;
+            
+            // Delete old photo if exists
+            $oldPhoto = $con->query("SELECT profile_photo FROM users WHERE id='$user_id'")->fetch_assoc();
+            if ($oldPhoto && !empty($oldPhoto['profile_photo']) && file_exists($oldPhoto['profile_photo'])) {
+                unlink($oldPhoto['profile_photo']);
+            }
+            
+            // Update database
+            $con->query("UPDATE users SET profile_photo='$photoPath' WHERE id='$user_id'");
+            $msg = "Profile photo updated successfully!";
+            $msg_type = "success";
+        }
+    } else {
+        $msg = "Only JPG, JPEG, PNG, GIF files are allowed.";
+        $msg_type = "danger";
+    }
+}
 
 // Handle Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_FILES['profile_photo'])) {
     $phone = $con->real_escape_string($_POST['phone']);
     $gender = $con->real_escape_string($_POST['gender']);
     $dob = $con->real_escape_string($_POST['dob']);
@@ -43,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($con->query($a_sql)) {
         $msg = "Profile updated successfully!";
         $msg_type = "success";
-        // Refresh user data
     } else {
         $msg = "Error updating profile: " . $con->error;
         $msg_type = "danger";
@@ -57,22 +87,76 @@ $user = $u_res->fetch_assoc();
 
 $a_res = $con->query("SELECT * FROM user_address WHERE user_id='$user_id'");
 $address = $a_res->fetch_assoc();
+
+// Default profile photo
+$profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']) . '&size=200&background=667eea&color=fff';
 ?>
+
+<style>
+.profile-photo-upload {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.profile-photo-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    margin: 0 auto 15px;
+    display: block;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+.photo-upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.photo-upload-label:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+.edit-profile-card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+</style>
 
 <section class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white">
-                    <h4 class="mb-0">Edit Profile</h4>
+            <div class="card shadow-sm border-0 edit-profile-card">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h4 class="mb-0"><i class="fa fa-edit me-2"></i>Edit Profile</h4>
                 </div>
                 <div class="card-body p-4">
                     <?php if($msg): ?>
-                        <div class="alert alert-<?= $msg_type ?>"><?= $msg ?></div>
+                        <div class="alert alert-<?= $msg_type ?> alert-dismissible fade show">
+                            <?= $msg ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
                     <?php endif; ?>
 
+                    <!-- Profile Photo Upload -->
+                    <div class="profile-photo-upload">
+                        <img src="<?= htmlspecialchars($profilePhoto) ?>" alt="Profile Photo" class="profile-photo-preview" id="photoPreview">
+                        <form method="POST" enctype="multipart/form-data" id="photoForm">
+                            <input type="file" name="profile_photo" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="previewAndSubmit(this)">
+                            <label for="profilePhotoInput" class="photo-upload-label">
+                                <i class="fa fa-camera me-2"></i>Change Profile Photo
+                            </label>
+                        </form>
+                        <div><small class="text-muted">JPG, JPEG, PNG, or GIF (Max 5MB)</small></div>
+                    </div>
+
+                    <hr class="my-4">
+
                     <form method="POST">
-                        <h5 class="text-primary mb-3">Personal Details</h5>
+                        <h5 class="text-primary mb-3"><i class="fa fa-user me-2"></i>Personal Details</h5>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Phone</label>
@@ -95,7 +179,7 @@ $address = $a_res->fetch_assoc();
 
                         <hr class="my-4">
 
-                        <h5 class="text-primary mb-3">Address</h5>
+                        <h5 class="text-primary mb-3"><i class="fa fa-map-marker-alt me-2"></i>Address</h5>
                         <div class="mb-3">
                             <label class="form-label">Address Line 1</label>
                             <input type="text" name="address_line1" class="form-control" value="<?= htmlspecialchars($address['address_line1'] ?? '') ?>" required>
@@ -126,8 +210,12 @@ $address = $a_res->fetch_assoc();
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">
-                            <a href="profile.php" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="profile.php" class="btn btn-outline-secondary">
+                                <i class="fa fa-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-save me-2"></i>Save Changes
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -135,6 +223,21 @@ $address = $a_res->fetch_assoc();
         </div>
     </div>
 </section>
+
+<script>
+function previewAndSubmit(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('photoPreview').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+        
+        // Submit the form
+        document.getElementById('photoForm').submit();
+    }
+}
+</script>
 
 <?php
 $content = ob_get_clean();

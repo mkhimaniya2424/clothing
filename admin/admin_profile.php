@@ -55,7 +55,7 @@ ob_start();
                 </div>
 
                 <div class="d-flex justify-content-between mt-4">
-                    <a href="dashboard.php" class="btn btn-secondary">Back</a>
+                    <a href="admin_dashboard.php" class="btn btn-secondary">Back</a>
                     <div>
                         <a href="admin_profile_edit.php" class="btn btn-warning me-2">Edit Profile</a>
                         <a href="admin_change_password.php" class="btn btn-danger">Change Password</a>

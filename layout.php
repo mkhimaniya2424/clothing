@@ -1,15 +1,24 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Visitor Tracking
+// Visitor Tracking - Enhanced to track all page visits
 if (isset($con)) {
     $visitor_ip = $_SERVER['REMOTE_ADDR'];
     $visit_date = date('Y-m-d');
-    $check_visitor = $con->query("SELECT id FROM visitors WHERE ip_address='$visitor_ip' AND visit_date='$visit_date'");
-    if ($check_visitor && $check_visitor->num_rows == 0) {
-        $current_page = $_SERVER['REQUEST_URI'];
-        $visit_time = date('H:i:s');
-        $con->query("INSERT INTO visitors (ip_address, visit_date, visit_time, page_url) VALUES ('$visitor_ip', '$visit_date', '$visit_time', '$current_page')");
+    $visit_time = date('H:i:s');
+    $current_page = $_SERVER['REQUEST_URI'];
+    
+    // Check if visitors table exists
+    $check_table = $con->query("SHOW TABLES LIKE 'visitors'");
+    if ($check_table && $check_table->num_rows > 0) {
+        // Insert every visit (not just unique daily visits)
+        // To avoid spam, we can check if the same IP visited the same page in the last minute
+        $one_min_ago = date('H:i:s', strtotime('-1 minute'));
+        $check_recent = $con->query("SELECT id FROM visitors WHERE ip_address='$visitor_ip' AND visit_date='$visit_date' AND visit_time > '$one_min_ago' AND page_url='$current_page'");
+        
+        if ($check_recent && $check_recent->num_rows == 0) {
+            $con->query("INSERT INTO visitors (ip_address, visit_date, visit_time, page_url) VALUES ('$visitor_ip', '$visit_date', '$visit_time', '$current_page')");
+        }
     }
 }
 
@@ -214,6 +223,7 @@ if (isset($con)) {
         <li class="nav-item"><a class="nav-link" href="home.php">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="shop.php">Shop</a></li>
         <li class="nav-item"><a class="nav-link" href="offers.php">Offers</a></li>
+        <li class="nav-item"><a class="nav-link" href="returns.php">Returns</a></li>
         <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
         <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
       </ul>
@@ -300,11 +310,11 @@ if (isset($con)) {
           <div class="col-md-6 text-center text-md-start text-secondary">
               &copy; <?= date("Y") ?> Clothing Brand. All Rights Reserved.
           </div>
-          <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
+          <!-- <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
               <img src="https://cdn-icons-png.flaticon.com/512/196/196578.png" alt="Visa" height="30" class="mx-1 opacity-75">
               <img src="https://cdn-icons-png.flaticon.com/512/196/196566.png" alt="Mastercard" height="30" class="mx-1 opacity-75">
               <img src="https://cdn-icons-png.flaticon.com/512/196/196565.png" alt="PayPal" height="30" class="mx-1 opacity-75">
-          </div>
+          </div> -->
       </div>
   </div>
 </footer>

@@ -212,11 +212,9 @@ $stmt->close();
             </form>
             
             <!-- Wishlist Button -->
-            <?php if (isLoggedIn()): ?>
             <a href="wishlist.php?action=add&id=<?= $product['id'] ?>" class="btn btn-outline-danger w-100">
                 <i class="fa fa-heart me-2"></i>Add to Wishlist
             </a>
-            <?php endif; ?>
         </div>
     </div>
     

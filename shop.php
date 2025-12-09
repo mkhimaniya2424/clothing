@@ -121,16 +121,27 @@ $result = $con->query($sql);
                     </div>
 
 
-                    <!-- BRAND -->
+                    <!-- BRAND (LOGOS) -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">Brand</label>
-                        <select name="brand" class="form-select">
-                            <?php foreach($brands as $b): ?>
-                                <option value="<?= $b ?>" <?= $brand == $b ? 'selected' : '' ?>>
-                                    <?= $b ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+                        <div class="d-flex flex-wrap gap-2">
+                            <label class="border rounded p-1 cursor-pointer <?= $brand === 'All' ? 'border-primary bg-light' : '' ?>" style="cursor:pointer;" title="All Brands">
+                                <input type="radio" name="brand" value="All" class="d-none" <?= $brand === 'All' ? 'checked' : '' ?> onchange="this.form.submit()">
+                                <span class="px-2">All</span>
+                            </label>
+                            <?php 
+                            // Fetch brands with logos
+                            $brandRes = $con->query("SELECT name, logo FROM brands ORDER BY name");
+                            while($b = $brandRes->fetch_assoc()):
+                                $isSelected = ($brand === $b['name']);
+                                $logoUrl = !empty($b['logo']) ? $b['logo'] : 'https://via.placeholder.com/50x30?text='.$b['name'];
+                            ?>
+                            <label class="border rounded p-1 cursor-pointer <?= $isSelected ? 'border-primary bg-light' : '' ?>" style="cursor:pointer; width: 60px; height: 40px; display: flex; align-items: center; justify-content: center;" title="<?= htmlspecialchars($b['name']) ?>">
+                                <input type="radio" name="brand" value="<?= htmlspecialchars($b['name']) ?>" class="d-none" <?= $isSelected ? 'checked' : '' ?> onchange="this.form.submit()">
+                                <img src="<?= htmlspecialchars($logoUrl) ?>" alt="<?= htmlspecialchars($b['name']) ?>" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                            </label>
+                            <?php endwhile; ?>
+                        </div>
                     </div>
 
                     <!-- PRICE RANGE -->
@@ -199,7 +210,6 @@ $result = $con->query($sql);
                             </div>
 
                             <div class="card-footer bg-white d-flex justify-content-center gap-2">
-                                <?php if (isLoggedIn()): ?>
                                 <a href="wishlist.php?action=add&id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-danger" title="Add to Wishlist">
                                     <i class="fa fa-heart"></i>
                                 </a>
@@ -210,11 +220,6 @@ $result = $con->query($sql);
                                     <input type="hidden" name="qty" value="1">
                                     <button class="btn btn-sm btn-dark" title="Add to Cart"><i class="fa fa-shopping-cart"></i></button>
                                 </form>
-                                <?php else: ?>
-                                <a href="login.php?redirect=shop.php" class="btn btn-sm btn-outline-secondary w-100">
-                                    Login to Purchase
-                                </a>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

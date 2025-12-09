@@ -118,11 +118,11 @@ if ($res) {
     <a href="admin_manage-brands.php" class="sidebar-link"><i class="fa fa-tags me-2"></i>Manage Brands</a>
     <a href="admin_manage-products.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage Products</a>
     <a href="admin_manage-orders.php" class="sidebar-link"><i class="fa fa-shopping-cart me-2"></i>Manage Orders</a>
+    <a href="admin_manage-returns.php" class="sidebar-link"><i class="fa fa-undo me-2"></i>Return Requests</a>
     <a href="admin_manage-wishlist.php" class="sidebar-link"><i class="fa fa-heart me-2"></i>Manage Wishlist</a>
     <a href="admin_manage-cart.php" class="sidebar-link"><i class="fa fa-cart-plus me-2"></i>Manage Cart</a>
     <a href="admin_manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
     <a href="admin_manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
-    <a href="admin_manage-visitors.php" class="sidebar-link"><i class="fa fa-users-cog me-2"></i>Visitors</a>
     <a href="admin_manage-reviews.php" class="sidebar-link"><i class="fa fa-star me-2"></i>Manage Reviews</a>
 
     <a href="admin_revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>

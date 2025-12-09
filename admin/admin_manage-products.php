@@ -31,7 +31,7 @@ foreach ($categories as $c) {
 
 /* ---------------- UPLOAD FOLDER ---------------- */
 // Adjusted path to match project structure
-$uploadDir = __DIR__ . '/images/product/';
+$uploadDir = __DIR__ . '/../uploads/products/';
 if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
 /* ---------------- ADD PRODUCT ---------------- */
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $safe = time() . "_" . bin2hex(random_bytes(5)) . "." . strtolower($ext);
                     if(move_uploaded_file($_FILES['images']['tmp_name'][$i], $uploadDir.$safe)){
                         // Store relative path for DB
-                        $savedImages[] = "images/product/".$safe;
+                        $savedImages[] = "uploads/products/".$safe;
                     } else {
                         $msg .= " Failed to upload " . $name . ". Error code: " . $_FILES['images']['error'][$i] . ". Path: " . $uploadDir.$safe;
                     }
@@ -138,11 +138,18 @@ if(isset($_GET['delete_id'])){
 <div class="container mt-4">
     <h3>Manage Products</h3>
 
-    <?php if($msg): ?>
+    <?php 
+    if(isset($_GET['msg'])) {
+        echo '<div class="alert alert-success alert-dismissible fade show">' . htmlspecialchars($_GET['msg']) . '<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>';
+    }
+    if($msg): 
+    ?>
         <div class="alert alert-info"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        <i class="fa fa-plus me-2"></i>Add Product
+    </button>
 
     <table class="table table-bordered table-striped">
         <thead>
@@ -177,7 +184,7 @@ if(isset($_GET['delete_id'])){
                     $imgs = json_decode($row['images'],true);
                     if($imgs){
                         foreach($imgs as $im){
-                            echo "<img src='$im' width='45' class='me-1 mb-1'>";
+                            echo "<img src='../$im' width='45' class='me-1 mb-1'>";
                         }
                     }
                     ?>
@@ -216,7 +223,7 @@ if(isset($_GET['delete_id'])){
                             <p><strong>Images:</strong></p>
                             <div class="d-flex flex-wrap">
                             <?php if($imgs): foreach($imgs as $im): ?>
-                                <img src="<?= $im ?>" width="100" class="me-2 mb-2 img-thumbnail">
+                                <img src="../<?= $im ?>" width="100" class="me-2 mb-2 img-thumbnail">
                             <?php endforeach; endif; ?>
                           </div>
                           </div>

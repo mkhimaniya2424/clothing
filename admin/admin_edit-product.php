@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // 2. Upload new images
-        $uploadDir = __DIR__ . '/images/product/';
+        $uploadDir = __DIR__ . '/../uploads/products/';
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         if (!empty($_FILES['new_images']['name'][0])) {
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $ext = pathinfo($name, PATHINFO_EXTENSION);
                     $safe = time() . "_" . bin2hex(random_bytes(5)) . "." . strtolower($ext);
                     if (move_uploaded_file($_FILES['new_images']['tmp_name'][$i], $uploadDir . $safe)) {
-                        $updatedImages[] = "images/product/" . $safe;
+                        $updatedImages[] = "uploads/products/" . $safe;
                     }
                 }
             }
@@ -200,7 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     foreach($imgs as $im): 
                 ?>
                     <div class="card p-2" style="width: 120px;">
-                        <img src="<?= $im ?>" class="card-img-top" style="height: 100px; object-fit: cover;">
+                        <img src="../<?= $im ?>" class="card-img-top" style="height: 100px; object-fit: cover;">
                         <div class="card-body p-1 text-center">
                             <div class="form-check form-switch d-flex justify-content-center">
                                 <input class="form-check-input" type="checkbox" name="keep_images[]" value="<?= $im ?>" checked title="Uncheck to delete">

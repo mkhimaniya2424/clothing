@@ -36,13 +36,13 @@ $result = $con->query($sql);
                                 $img = "https://via.placeholder.com/50";
                                 if(!empty($row['images'])) {
                                     $decoded = json_decode($row['images'], true);
-                                    if($decoded && count($decoded) > 0) $img = $decoded[0];
+                                    if($decoded && count($decoded) > 0) $img = '../' . $decoded[0];
                                 }
                             ?>
                             <tr>
                                 <td><?= htmlspecialchars($row['username']) ?></td>
                                 <td><?= htmlspecialchars($row['title']) ?></td>
-                                <td><img src="<?= htmlspecialchars($img) ?>" width="50" height="50" class="rounded"></td>
+                                <td><img src="<?= htmlspecialchars($img) ?>" width="50" height="50" class="rounded" style="object-fit: cover;"></td>
                                 <td><?= $row['quantity'] ?></td>
                                 <td>₹<?= number_format($row['price'], 2) ?></td>
                                 <td>₹<?= number_format($row['price'] * $row['quantity'], 2) ?></td>
