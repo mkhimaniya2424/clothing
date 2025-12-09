@@ -1,0 +1,57 @@
+﻿5.4 DFD (Data Flow Diagram)
+1 Level DFD
+-943390159496Customer ManagementCustomer Management
+Customer Management
+Customer Management
+463501228282Generate Customer ReportGenerate Customer Report
+Generate Customer Report
+Generate Customer Report
+78071925295100
+34111109563700
+
+-969976176171Product ManagementProduct Management4681904236220Generate Product ReportGenerate Product Report
+Product Management
+Product Management
+Generate Product Report
+Generate Product Report
+
+
+354628129816007648163776900
+
+-959402136387Payment ManagementPayment Management4688401217170Gererate Payment ReportGererate Payment Report
+Payment Management
+Payment Management
+Gererate Payment Report
+Gererate Payment Report
+1783798139065Online Clothing StoreOnline Clothing Store
+Online Clothing Store
+Online Clothing Store
+77127716073800
+35780871767000
+-967381357201Order ManagementOrder Management
+Order Management
+Order Management
+36019411420190078552346603004689524184736Generate Order ReportGenerate Order Report
+Generate Order Report
+Generate Order Report
+35303791755360080142512782800
+3423698167639008125245797800
+
+-971301310459Login ManagementLogin Management
+Login Management
+Login Management
+4689866110588Check User Login DetailsCheck User Login Details
+Check User Login Details
+Check User Login Details
+
+
+
+-936073207977System User ManagementSystem User Management
+System User Management
+System User Management
+469157697693Generate System User ReportGenerate System User Report
+Generate System User Report
+Generate System User Report
+
+
+

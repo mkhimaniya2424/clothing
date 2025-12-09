@@ -1,0 +1,6 @@
+﻿5.1 System Architecture Design
+The system follows a Three-Tier Architecture:
+ 1ï¸ Presentation Layer â€“ User Interface (Customers & Admin) 2ï¸ Business Logic Layer â€“ Handles login, cart, orders, product request processing 3ï¸ Data Layer â€“ MySQL Database for storing all records
+
+
+
