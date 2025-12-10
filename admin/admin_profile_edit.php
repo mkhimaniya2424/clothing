@@ -28,6 +28,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $mobile    = $con->real_escape_string($_POST['mobile']);
     $profilePicName = $admin['profile_pic'];
 
+    // Handle photo removal
+    if (isset($_POST['remove_photo']) && $_POST['remove_photo'] == '1') {
+        if (!empty($admin['profile_pic']) && file_exists($profileDir.$admin['profile_pic'])) {
+            unlink($profileDir.$admin['profile_pic']);
+        }
+        $profilePicName = NULL;
+    }
+
     // Handle file upload
     if (!empty($_FILES['profile_pic']['name'])) {
         $file = $_FILES['profile_pic'];
@@ -46,7 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!$error) {
-        $update = $con->query("UPDATE admin SET full_name='$full_name', email='$email', mobile='$mobile', profile_pic='$profilePicName' WHERE id=$admin_id");
+        $profilePicSql = $profilePicName ? "'$profilePicName'" : "NULL";
+        $update = $con->query("UPDATE admin SET full_name='$full_name', email='$email', mobile='$mobile', profile_pic=$profilePicSql WHERE id=$admin_id");
         if ($update) {
             $success = "Profile updated successfully.";
             $_SESSION['admin']['name'] = $full_name;

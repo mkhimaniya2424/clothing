@@ -35,10 +35,28 @@ require_once 'db_connect.php';
 $user_id = $_SESSION['user']['id'];
 $title_page = "My Profile";
 
-// Handle profile photo upload
+// Handle profile photo upload or removal
 $uploadMessage = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
-    $file = $_FILES['profile_photo'];
+
+// 1. Handle Photo Removal
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_photo'])) {
+    // Update database to set profile_pic to NULL
+    $stmt = $con->prepare("UPDATE users SET profile_pic = NULL WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    
+    if ($stmt->execute()) {
+        $uploadMessage = 'Profile photo removed successfully!';
+        // Optional: Delete the file from server if you want to save space
+        // if (!empty($user['profile_pic']) && file_exists($user['profile_pic'])) { unlink($user['profile_pic']); }
+    } else {
+        $uploadMessage = 'Error removing photo.';
+    }
+    $stmt->close();
+}
+
+// 2. Handle Photo Upload
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_pic'])) {
+    $file = $_FILES['profile_pic'];
     
     if ($file['error'] === UPLOAD_ERR_OK) {
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -55,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
                 $photoPath = 'uploads/profiles/' . $newFileName;
                 
                 // Update database
-                $stmt = $con->prepare("UPDATE users SET profile_photo = ? WHERE id = ?");
+                $stmt = $con->prepare("UPDATE users SET profile_pic = ? WHERE id = ?");
                 $stmt->bind_param("si", $photoPath, $user_id);
                 $stmt->execute();
                 $stmt->close();
@@ -89,7 +107,7 @@ $address = $stmt2->get_result()->fetch_assoc();
 $stmt2->close();
 
 // Default profile photo
-$profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']) . '&size=200&background=667eea&color=fff';
+$profilePhoto = $user['profile_pic'] ?? 'https://ui-avatars.com/api/?name=' . urlencode($user['username']) . '&size=200&background=667eea&color=fff';
 
 ob_start();
 ?>
@@ -129,6 +147,27 @@ ob_start();
     background: #764ba2;
     transform: scale(1.1);
 }
+.photo-remove-btn {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #dc3545;
+    color: white;
+    border: 3px solid white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+.photo-remove-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
 .profile-card {
     border-radius: 20px;
     overflow: hidden;
@@ -158,8 +197,18 @@ ob_start();
                     <label for="profilePhotoInput" class="photo-upload-btn" title="Change Photo">
                         <i class="fa fa-camera"></i>
                     </label>
+                    
+                    <?php if (!empty($user['profile_pic'])): ?>
+                        <form method="POST" id="removePhotoForm" style="display:inline;">
+                            <input type="hidden" name="remove_photo" value="1">
+                            <button type="button" class="photo-remove-btn" title="Remove Photo" onclick="if(confirm('Are you sure you want to remove your profile photo?')) document.getElementById('removePhotoForm').submit();">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                    <?php endif; ?>
+
                     <form method="POST" enctype="multipart/form-data" id="photoUploadForm" style="display: none;">
-                        <input type="file" name="profile_photo" id="profilePhotoInput" accept="image/*" onchange="document.getElementById('photoUploadForm').submit();">
+                        <input type="file" name="profile_pic" id="profilePhotoInput" accept="image/*" onchange="document.getElementById('photoUploadForm').submit();">
                     </form>
                 </div>
                 <h3 class="mb-1"><?= htmlspecialchars($user['username']) ?></h3>
