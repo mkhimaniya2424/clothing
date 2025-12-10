@@ -21,7 +21,6 @@ function safeCount($con, $table, $condition = '') {
 $products = safeCount($con, "products");
 $orders = safeCount($con, "orders");
 $users = safeCount($con, "users");
-$returns = safeCount($con, "return_requests");
 $categories = safeCount($con, "categories");
 $brands = safeCount($con, "brands");
 
@@ -37,41 +36,44 @@ $sql = "SHOW TABLES LIKE 'orders'";
 $checkOrdersTable = $con->query($sql);
 
 if($checkOrdersTable->num_rows > 0) {
-    // Total revenue
-    $revResult = $con->query("SELECT SUM(final_amount) as total FROM orders WHERE payment_status='paid'");
+    // Total revenue - includes paid online orders and all COD orders (since COD is paid on delivery)
+    $revResult = $con->query("SELECT SUM(final_amount) as total FROM orders WHERE payment_status='paid' OR payment_method='cod'");
     $totalRevenue = $revResult->fetch_assoc()['total'] ?? 0;
     
     // This month's revenue
     $monthStart = date('Y-m-01');
-    $monthRevResult = $con->query("SELECT SUM(final_amount) as total FROM orders WHERE payment_status='paid' AND created_at >= '$monthStart'");
+    $monthRevResult = $con->query("SELECT SUM(final_amount) as total FROM orders WHERE (payment_status='paid' OR payment_method='cod') AND created_at >= '$monthStart'");
     $monthlyRevenue = $monthRevResult->fetch_assoc()['total'] ?? 0;
 }
 
-// Fetch Monthly Revenue for chart
-$monthlyRevenueData = [];
-$monthlyOrdersData = [];
-$months = [];
+// Fetch Order Status Distribution for Pie Chart
+$orderStatusLabels = [];
+$orderStatusData = [];
+$orderStatusColors = [
+    'pending' => '#ffc107',
+    'confirmed' => '#17a2b8',
+    'processing' => '#6f42c1',
+    'packed' => '#fd7e14',
+    'shipped' => '#007bff',
+    'delivered' => '#28a745',
+    'cancelled' => '#dc3545'
+];
 
 if($checkOrdersTable->num_rows > 0) {
-    $revQuery = $con->query("
-        SELECT DATE_FORMAT(created_at, '%b') AS month, 
-               SUM(final_amount) AS revenue, 
-               COUNT(*) AS order_count
-        FROM orders
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
-        ORDER BY created_at ASC
+    $statusQuery = $con->query("
+        SELECT order_status, COUNT(*) as count 
+        FROM orders 
+        GROUP BY order_status
+        ORDER BY count DESC
     ");
-
-    while($row = $revQuery->fetch_assoc()) {
-        $monthlyRevenueData[] = $row['revenue'];
-        $monthlyOrdersData[] = $row['order_count'];
-        $months[] = $row['month'];
+    
+    while($row = $statusQuery->fetch_assoc()) {
+        $orderStatusLabels[] = ucfirst($row['order_status']);
+        $orderStatusData[] = $row['count'];
     }
 } else {
-    $monthlyRevenueData = [0,0,0,0,0,0];
-    $monthlyOrdersData = [0,0,0,0,0,0];
-    $months = ["Jan","Feb","Mar","Apr","May","Jun"];
+    $orderStatusLabels = ['No Orders'];
+    $orderStatusData = [0];
 }
 ?>
 
@@ -234,30 +236,174 @@ if($checkOrdersTable->num_rows > 0) {
         </div>
     </div>
 
-    <!-- Charts -->
-    <div class="row g-3">
-        <!-- Revenue Chart -->
-        <div class="col-xl-8">
+    <!-- Charts Row -->
+    <div class="row g-3 mb-4">
+        <!-- Order Status Chart -->
+        <div class="col-xl-6">
             <div class="card chart-card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0"><i class="fa fa-chart-area me-2 text-primary"></i>Revenue Overview</h5>
-                    <small class="text-muted">Last 6 months revenue trend</small>
+                    <h5 class="mb-0"><i class="fa fa-chart-pie me-2 text-primary"></i>Order Status Distribution</h5>
+                    <small class="text-muted">Current orders by status</small>
                 </div>
                 <div class="card-body">
-                    <canvas id="revenueChart" height="100"></canvas>
+                    <canvas id="orderStatusChart" height="150"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Orders Chart -->
-        <div class="col-xl-4">
-            <div class="card chart-card border-0 shadow-sm">
+        <!-- Recent Orders -->
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-0 py-3">
-                    <h5 class="mb-0"><i class="fa fa-chart-bar me-2 text-success"></i>Orders</h5>
-                    <small class="text-muted">Monthly orders</small>
+                    <h5 class="mb-0"><i class="fa fa-shopping-bag me-2 text-success"></i>Recent Orders</h5>
+                    <small class="text-muted">Latest 5 orders</small>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $recentOrders = $con->query("
+                                    SELECT o.id, o.final_amount, o.order_status, o.created_at, u.username 
+                                    FROM orders o 
+                                    LEFT JOIN users u ON o.user_id = u.id 
+                                    ORDER BY o.created_at DESC 
+                                    LIMIT 5
+                                ");
+                                
+                                if ($recentOrders && $recentOrders->num_rows > 0) {
+                                    while ($order = $recentOrders->fetch_assoc()) {
+                                        $statusColors = [
+                                            'pending' => 'warning',
+                                            'confirmed' => 'info',
+                                            'processing' => 'primary',
+                                            'packed' => 'secondary',
+                                            'shipped' => 'primary',
+                                            'delivered' => 'success',
+                                            'cancelled' => 'danger'
+                                        ];
+                                        $badgeColor = $statusColors[$order['order_status']] ?? 'secondary';
+                                        ?>
+                                        <tr>
+                                            <td><strong>#<?= str_pad($order['id'], 4, '0', STR_PAD_LEFT) ?></strong></td>
+                                            <td><?= htmlspecialchars($order['username'] ?? 'Guest') ?></td>
+                                            <td>₹<?= number_format($order['final_amount'], 2) ?></td>
+                                            <td><span class="badge bg-<?= $badgeColor ?>"><?= ucfirst($order['order_status']) ?></span></td>
+                                            <td><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
+                                        </tr>
+                                        <?php
+                                    }
+                                } else {
+                                    echo '<tr><td colspan="5" class="text-center text-muted py-4">No orders yet</td></tr>';
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Dashboard Sections -->
+    <div class="row g-3 mb-4">
+        <!-- Top Selling Products -->
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0"><i class="fa fa-star me-2 text-warning"></i>Top Selling Products</h5>
+                    <small class="text-muted">Best performers</small>
                 </div>
                 <div class="card-body">
-                    <canvas id="ordersChart" height="100"></canvas>
+                    <?php
+                    $topProducts = $con->query("
+                        SELECT p.title, p.price, SUM(oi.quantity) as total_sold
+                        FROM order_items oi
+                        JOIN products p ON oi.product_id = p.id
+                        GROUP BY oi.product_id
+                        ORDER BY total_sold DESC
+                        LIMIT 5
+                    ");
+                    
+                    if ($topProducts && $topProducts->num_rows > 0) {
+                        while ($product = $topProducts->fetch_assoc()) {
+                            ?>
+                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                <div class="me-3">
+                                    <div style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa fa-tshirt text-muted"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1"><?= htmlspecialchars(substr($product['title'], 0, 30)) ?><?= strlen($product['title']) > 30 ? '...' : '' ?></h6>
+                                    <small class="text-muted">₹<?= number_format($product['price'], 2) ?></small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-success"><?= $product['total_sold'] ?> sold</span>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<p class="text-center text-muted py-4">No sales data available</p>';
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Alert -->
+        <div class="col-xl-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 py-3">
+                    <h5 class="mb-0"><i class="fa fa-exclamation-triangle me-2 text-danger"></i>Low Stock Alert</h5>
+                    <small class="text-muted">Products running low</small>
+                </div>
+                <div class="card-body">
+                    <?php
+                    $lowStock = $con->query("
+                        SELECT id, title, stock, price
+                        FROM products
+                        WHERE stock < 10 AND stock > 0
+                        ORDER BY stock ASC
+                        LIMIT 5
+                    ");
+                    
+                    if ($lowStock && $lowStock->num_rows > 0) {
+                        while ($product = $lowStock->fetch_assoc()) {
+                            $stockLevel = $product['stock'] <= 3 ? 'danger' : 'warning';
+                            ?>
+                            <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                                <div class="me-3">
+                                    <div style="width: 50px; height: 50px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fa fa-box text-muted"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1"><?= htmlspecialchars(substr($product['title'], 0, 30)) ?><?= strlen($product['title']) > 30 ? '...' : '' ?></h6>
+                                    <small class="text-muted">₹<?= number_format($product['price'], 2) ?></small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-<?= $stockLevel ?>">
+                                        <i class="fa fa-box me-1"></i><?= $product['stock'] ?> left
+                                    </span>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    } else {
+                        echo '<p class="text-center text-muted py-4"><i class="fa fa-check-circle text-success me-2"></i>All products well stocked!</p>';
+                    }
+                    ?>
                 </div>
             </div>
         </div>
@@ -269,56 +415,33 @@ if($checkOrdersTable->num_rows > 0) {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-var months = <?php echo json_encode($months); ?>;
-var revenue = <?php echo json_encode($monthlyRevenueData); ?>;
-var orders = <?php echo json_encode($monthlyOrdersData); ?>;
+var statusLabels = <?php echo json_encode($orderStatusLabels); ?>;
+var statusData = <?php echo json_encode($orderStatusData); ?>;
 
-// Revenue Chart
-new Chart(document.getElementById('revenueChart'), {
-    type: 'line',
-    data: {
-        labels: months,
-        datasets: [{
-            label: 'Revenue (₹)',
-            data: revenue,
-            borderColor: '#667eea',
-            backgroundColor: 'rgba(102, 126, 234, 0.1)',
-            fill: true,
-            tension: 0.4,
-            borderWidth: 3
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return '₹' + value.toLocaleString();
-                    }
-                }
-            }
-        }
-    }
+// Generate colors based on status
+var backgroundColors = statusLabels.map(function(label) {
+    var colorMap = {
+        'Pending': '#ffc107',
+        'Confirmed': '#17a2b8',
+        'Processing': '#6f42c1',
+        'Packed': '#fd7e14',
+        'Shipped': '#007bff',
+        'Delivered': '#28a745',
+        'Cancelled': '#dc3545'
+    };
+    return colorMap[label] || '#6c757d';
 });
 
-// Orders Chart
-new Chart(document.getElementById('ordersChart'), {
-    type: 'bar',
+// Order Status Pie Chart
+new Chart(document.getElementById('orderStatusChart'), {
+    type: 'pie',
     data: {
-        labels: months,
+        labels: statusLabels,
         datasets: [{
-            label: 'Orders',
-            data: orders,
-            backgroundColor: 'rgba(40, 167, 69, 0.8)',
-            borderRadius: 8
+            data: statusData,
+            backgroundColor: backgroundColors,
+            borderWidth: 2,
+            borderColor: '#fff'
         }]
     },
     options: {
@@ -326,14 +449,40 @@ new Chart(document.getElementById('ordersChart'), {
         maintainAspectRatio: true,
         plugins: {
             legend: {
-                display: false
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    stepSize: 1
+                position: 'right',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12
+                    },
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        if (data.labels.length && data.datasets.length) {
+                            return data.labels.map((label, i) => {
+                                const value = data.datasets[0].data[i];
+                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return {
+                                    text: `${label}: ${value} (${percentage}%)`,
+                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                    hidden: false,
+                                    index: i
+                                };
+                            });
+                        }
+                        return [];
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        let value = context.parsed || 0;
+                        let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        let percentage = ((value / total) * 100).toFixed(1);
+                        return `${label}: ${value} orders (${percentage}%)`;
+                    }
                 }
             }
         }

@@ -4,10 +4,19 @@ require_once 'admin_auth.php';
 require_once '../db_connect.php';
 
 /* ---------------- FETCH PRODUCTS ---------------- */
+// Handle search
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+$searchQuery = '';
+if (!empty($searchTerm)) {
+    $searchTerm = $con->real_escape_string($searchTerm);
+    $searchQuery = " WHERE p.title LIKE '%$searchTerm%' OR p.category_brand LIKE '%$searchTerm%' OR p.category_main LIKE '%$searchTerm%' OR p.category_sub LIKE '%$searchTerm%'";
+}
+
 $res = $con->query("
     SELECT p.id, p.title, p.price, p.category_brand, p.category_main, p.category_sub,
            p.status, p.stock, p.images
     FROM products p
+    $searchQuery
     ORDER BY p.id DESC
 ");
 
@@ -140,9 +149,32 @@ if(isset($_GET['delete_id'])){
         <div class="alert alert-info"><?= htmlspecialchars($msg) ?></div>
     <?php endif; ?>
 
-    <button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">
-        <i class="fa fa-plus me-2"></i>Add Product
-    </button>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <i class="fa fa-plus me-2"></i>Add Product
+            </button>
+        </div>
+        <div class="col-md-6">
+            <form method="GET" class="d-flex">
+                <input type="text" name="search" class="form-control me-2" placeholder="Search products by name, brand, category..." value="<?= htmlspecialchars($searchTerm) ?>">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa fa-search"></i> Search
+                </button>
+                <?php if (!empty($searchTerm)): ?>
+                    <a href="admin_manage-products.php" class="btn btn-secondary ms-2">
+                        <i class="fa fa-times"></i> Clear
+                    </a>
+                <?php endif; ?>
+            </form>
+        </div>
+    </div>
+
+    <?php if (!empty($searchTerm)): ?>
+        <div class="alert alert-info">
+            Showing results for: <strong><?= htmlspecialchars($searchTerm) ?></strong>
+        </div>
+    <?php endif; ?>
 
     <table class="table table-bordered table-striped">
         <thead>

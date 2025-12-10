@@ -22,6 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 // Filter by status
 $statusFilter = $_GET['status_filter'] ?? 'all';
 
+// Handle search
+$searchTerm = isset($_GET['search']) ? trim($_GET['search']) : '';
+
 // Fetch orders with user info
 $ordersQuery = "
     SELECT o.*, u.username, u.email 
@@ -29,8 +32,19 @@ $ordersQuery = "
     LEFT JOIN users u ON o.user_id = u.id 
 ";
 
+$conditions = [];
+
 if ($statusFilter !== 'all') {
-    $ordersQuery .= " WHERE o.order_status = '" . $con->real_escape_string($statusFilter) . "'";
+    $conditions[] = "o.order_status = '" . $con->real_escape_string($statusFilter) . "'";
+}
+
+if (!empty($searchTerm)) {
+    $searchEscaped = $con->real_escape_string($searchTerm);
+    $conditions[] = "(o.id LIKE '%$searchEscaped%' OR u.username LIKE '%$searchEscaped%' OR u.email LIKE '%$searchEscaped%' OR o.shipping_address LIKE '%$searchEscaped%')";
+}
+
+if (!empty($conditions)) {
+    $ordersQuery .= " WHERE " . implode(" AND ", $conditions);
 }
 
 $ordersQuery .= " ORDER BY o.created_at DESC";
@@ -205,27 +219,54 @@ $msg = $_GET['msg'] ?? '';
         </div>
     </div>
 
+    <!-- Search Bar -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body">
+            <form method="GET" class="row g-2">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" placeholder="Search by Order ID, Customer Name, Email, or Address..." value="<?= htmlspecialchars($searchTerm) ?>">
+                    <?php if ($statusFilter !== 'all'): ?>
+                        <input type="hidden" name="status_filter" value="<?= htmlspecialchars($statusFilter) ?>">
+                    <?php endif; ?>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fa fa-search me-1"></i> Search
+                    </button>
+                </div>
+            </form>
+            <?php if (!empty($searchTerm)): ?>
+                <div class="mt-2">
+                    <span class="badge bg-info">Searching for: <?= htmlspecialchars($searchTerm) ?></span>
+                    <a href="?<?= $statusFilter !== 'all' ? 'status_filter=' . urlencode($statusFilter) : '' ?>" class="btn btn-sm btn-outline-secondary ms-2">
+                        <i class="fa fa-times"></i> Clear Search
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <!-- Filter Buttons -->
     <div class="card shadow-sm border-0 mb-4">
         <div class="card-body">
             <div class="d-flex flex-wrap gap-2">
-                <a href="?status_filter=all" class="btn filter-btn <?= $statusFilter === 'all' ? 'active' : 'btn-outline-secondary' ?>">
+                <a href="?status_filter=all<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'all' ? 'active' : 'btn-outline-secondary' ?>">
                     <i class="fa fa-list me-1"></i>All Orders
                 </a>
-                <a href="?status_filter=pending" class="btn filter-btn <?= $statusFilter === 'pending' ? 'active' : 'btn-outline-warning' ?>">
+                <a href="?status_filter=pending<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'pending' ? 'active' : 'btn-outline-warning' ?>">
                     <i class="fa fa-clock me-1"></i>Pending
                 </a>
-                <a href="?status_filter=confirmed" class="btn filter-btn <?= $statusFilter === 'confirmed' ? 'active' : 'btn-outline-info' ?>">
+                <a href="?status_filter=confirmed<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'confirmed' ? 'active' : 'btn-outline-info' ?>">
                     <i class="fa fa-check-circle me-1"></i>Confirmed
                 </a>
-                <a href="?status_filter=shipped" class="btn filter-btn <?= $statusFilter === 'shipped' ? 'active' : 'btn-outline-primary' ?>">
+                <a href="?status_filter=shipped<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'shipped' ? 'active' : 'btn-outline-primary' ?>">
                     <i class="fa fa-shipping-fast me-1"></i>Shipped
                 </a>
-                <a href="?status_filter=delivered" class="btn filter-btn <?= $statusFilter === 'delivered' ? 'active' : 'btn-outline-success' ?>">
+                <a href="?status_filter=delivered<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'delivered' ? 'active' : 'btn-outline-success' ?>">
                     <i class="fa fa-check-double me-1"></i>Delivered
                 </a>
 
-                <a href="?status_filter=cancelled" class="btn filter-btn <?= $statusFilter === 'cancelled' ? 'active' : 'btn-outline-danger' ?>">
+                <a href="?status_filter=cancelled<?= !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : '' ?>" class="btn filter-btn <?= $statusFilter === 'cancelled' ? 'active' : 'btn-outline-danger' ?>">
                     <i class="fa fa-times-circle me-1"></i>Cancelled
                 </a>
             </div>

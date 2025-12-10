@@ -11,6 +11,7 @@ require_once 'session_helper.php';
 $main_category = $_GET['main_category'] ?? "All";
 $brand = $_GET['brand'] ?? "All";
 $sort = $_GET['sort'] ?? "newest";
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 $min_price = isset($_GET['min_price']) && $_GET['min_price'] !== "" ? intval($_GET['min_price']) : 0;
 $max_price = isset($_GET['max_price']) && $_GET['max_price'] !== "" ? intval($_GET['max_price']) : 500000;
@@ -41,6 +42,12 @@ $sql = "
     FROM products p
     WHERE p.status='active'
 ";
+
+// SEARCH filter
+if (!empty($search)) {
+    $searchEscaped = $con->real_escape_string($search);
+    $sql .= " AND (p.title LIKE '%$searchEscaped%' OR p.category_brand LIKE '%$searchEscaped%' OR p.category_main LIKE '%$searchEscaped%' OR p.description LIKE '%$searchEscaped%')";
+}
 
 // MAIN CATEGORY filter
 if ($main_category !== "All") {
@@ -104,6 +111,23 @@ $result = $con->query($sql);
                 <h5 class="fw-bold mb-3">Filters</h5>
 
                 <form method="GET">
+
+                    <!-- SEARCH -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Search Products</label>
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search..." value="<?= htmlspecialchars($search) ?>">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                        <?php if (!empty($search)): ?>
+                            <small class="text-muted d-block mt-1">
+                                Searching for: <strong><?= htmlspecialchars($search) ?></strong>
+                                <a href="shop.php" class="text-decoration-none ms-1">(Clear)</a>
+                            </small>
+                        <?php endif; ?>
+                    </div>
 
 
                     <!-- MAIN CATEGORY -->

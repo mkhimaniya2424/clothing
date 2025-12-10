@@ -105,6 +105,11 @@ ob_start();
                     <div class="mb-3">
                         <label class="fw-bold">Profile Picture</label>
                         <input type="file" name="profile_pic" class="form-control">
+                        <?php if (!empty($admin['profile_pic'])): ?>
+                            <button type="submit" name="remove_photo" value="1" class="btn btn-danger btn-sm mt-2" onclick="return confirm('Are you sure you want to remove your profile picture?');">
+                                <i class="fa fa-trash"></i> Remove Photo
+                            </button>
+                        <?php endif; ?>
                     </div>
 
                     <div class="d-flex justify-content-between">
