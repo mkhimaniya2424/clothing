@@ -1,7 +1,7 @@
 <?php
 ob_start();
 session_start();
-require_once 'db_connect.php';
+include_once 'db_connect.php';
 
 if (!isset($_SESSION['user'])) {
     header("Location: login.php");

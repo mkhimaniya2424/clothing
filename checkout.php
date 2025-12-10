@@ -175,37 +175,11 @@ $final_amount = $total - $discount_amount;
 
                 <div class="mb-3">
                     <label class="fw-bold">Payment Method</label>
-                    <select name="payment_method" id="payment_method" class="form-control" required onchange="togglePaymentFields()">
+                    <select name="payment_method" id="payment_method" class="form-control" required>
                         <option value="">Select Payment Method</option>
                         <option value="cod">Cash on Delivery</option>
-                        <option value="card">Credit/Debit Card</option>
-                        <option value="upi">UPI</option>
-                        <option value="netbanking">Net Banking</option>
+                        <option value="online">Pay Online (Card/UPI/Netbanking)</option>
                     </select>
-                </div>
-
-                <!-- DYNAMIC PAYMENT FIELDS -->
-                <div id="upi_fields" class="mb-3 d-none p-3 bg-light rounded border">
-                    <label class="fw-bold">UPI ID</label>
-                    <input type="text" name="upi_id" class="form-control" placeholder="example@upi">
-                    <small class="text-muted">Enter your UPI ID (Google Pay, PhonePe, Paytm, etc.)</small>
-                </div>
-
-                <div id="card_fields" class="mb-3 d-none p-3 bg-light rounded border">
-                    <div class="mb-3">
-                        <label class="fw-bold">Card Number</label>
-                        <input type="text" name="card_number" class="form-control" placeholder="XXXX XXXX XXXX XXXX">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">Expiry Date</label>
-                            <input type="text" name="card_expiry" class="form-control" placeholder="MM/YY">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="fw-bold">CVV</label>
-                            <input type="password" name="card_cvv" class="form-control" placeholder="123">
-                        </div>
-                    </div>
                 </div>
 
                 <input type="hidden" name="total_amount" value="<?= $total ?>">
@@ -292,28 +266,85 @@ $final_amount = $total - $discount_amount;
     </div>
 </section>
 
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-function togglePaymentFields() {
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     const method = document.getElementById('payment_method').value;
-    const upiFields = document.getElementById('upi_fields');
-    const cardFields = document.getElementById('card_fields');
     
-    // Reset
-    upiFields.classList.add('d-none');
-    cardFields.classList.add('d-none');
-    
-    // Remove required attributes to prevent validation errors on hidden fields
-    document.querySelectorAll('#upi_fields input').forEach(i => i.required = false);
-    document.querySelectorAll('#card_fields input').forEach(i => i.required = false);
-
-    if (method === 'upi') {
-        upiFields.classList.remove('d-none');
-        document.querySelector('input[name="upi_id"]').required = true;
-    } else if (method === 'card') {
-        cardFields.classList.remove('d-none');
-        document.querySelectorAll('#card_fields input').forEach(i => i.required = true);
+    if (method === 'cod') {
+        return; // Allow normal submission for COD
     }
-}
+    
+    e.preventDefault(); // Stop form for Online Payment
+    
+    const formData = new FormData(this);
+    
+    // Create Razorpay Order
+    fetch('create_razorpay_order.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.status === 'success') {
+            var options = {
+                "key": data.key,
+                "amount": data.amount,
+                "currency": "INR",
+                "name": "Clothing Store",
+                "description": "Order Payment",
+                "order_id": data.order_id,
+                "handler": function (response){
+                    // Verify Payment
+                    const verifyForm = document.createElement('form');
+                    verifyForm.method = 'POST';
+                    verifyForm.action = 'verify_razorpay_payment.php';
+                    
+                    // Add original form data
+                    for(var pair of formData.entries()) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = pair[0];
+                        input.value = pair[1];
+                        verifyForm.appendChild(input);
+                    }
+                    
+                    // Add Razorpay data
+                    const fields = ['razorpay_payment_id', 'razorpay_order_id', 'razorpay_signature'];
+                    fields.forEach(field => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = field;
+                        input.value = response[field];
+                        verifyForm.appendChild(input);
+                    });
+                    
+                    document.body.appendChild(verifyForm);
+                    verifyForm.submit();
+                },
+                "prefill": {
+                    "name": data.user_name,
+                    "email": data.user_email,
+                    "contact": data.user_contact
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            var rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){
+                alert("Payment Failed: " + response.error.description);
+            });
+            rzp1.open();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Something went wrong. Please try again.');
+    });
+});
 </script>
 
 <?php

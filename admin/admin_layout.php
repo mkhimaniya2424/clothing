@@ -14,9 +14,13 @@ $notificationCount = 0;
 
 $unreadCount = 0;
 include_once("../db_connect.php");
-$res = $con->query("SELECT COUNT(*) as cnt FROM messages WHERE status='unread'");
-if ($res) {
-    $unreadCount = $res->fetch_assoc()['cnt'];
+// Check if contact_messages table exists
+$checkTable = $con->query("SHOW TABLES LIKE 'contact_messages'");
+if ($checkTable && $checkTable->num_rows > 0) {
+    $res = $con->query("SELECT COUNT(*) as cnt FROM contact_messages WHERE status='pending'");
+    if ($res) {
+        $unreadCount = $res->fetch_assoc()['cnt'];
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -123,6 +127,7 @@ if ($res) {
     <a href="admin_manage-cart.php" class="sidebar-link"><i class="fa fa-cart-plus me-2"></i>Manage Cart</a>
     <a href="admin_manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
     <a href="admin_manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
+    <a href="admin_manage-contact.php" class="sidebar-link"><i class="fa fa-envelope me-2"></i>Messages</a>
     <a href="admin_manage-reviews.php" class="sidebar-link"><i class="fa fa-star me-2"></i>Manage Reviews</a>
 
     <a href="admin_revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>
@@ -152,7 +157,7 @@ if ($res) {
         </a>
 
         <!-- Messages -->
-        <a href="admin_message.php" class="me-3 position-relative text-dark">
+        <a href="admin_manage-contact.php" class="me-3 position-relative text-dark">
             <i class="fa fa-envelope fs-5"></i>
             <?php if(!empty($unreadCount) && $unreadCount > 0): ?>
                 <span class="badge bg-primary position-absolute top-0 start-100 translate-middle rounded-pill">
