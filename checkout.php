@@ -266,7 +266,52 @@ $final_amount = $total - $discount_amount;
     </div>
 </section>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- Dummy Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fa fa-credit-card me-2"></i>Secure Payment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="text-center mb-4">
+            <h3 id="payAmount" class="fw-bold text-primary"></h3>
+            <p class="text-muted">Completing transaction securely</p>
+        </div>
+        
+        <form id="dummyPaymentForm">
+            <div class="mb-3">
+                <label class="form-label">Card Number</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa fa-credit-card"></i></span>
+                    <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <label class="form-label">Expiry</label>
+                    <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" required>
+                </div>
+                <div class="col-6 mb-3">
+                    <label class="form-label">CVV</label>
+                    <input type="password" class="form-control" placeholder="123" maxlength="3" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Card Holder Name</label>
+                <input type="text" class="form-control" placeholder="Name on Card" required>
+            </div>
+            
+            <button type="submit" class="btn btn-success w-100 btn-lg mt-2" id="payBtn">
+                Pay Now
+            </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     const method = document.getElementById('payment_method').value;
@@ -279,63 +324,19 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     
     const formData = new FormData(this);
     
-    // Create Razorpay Order
-    fetch('create_razorpay_order.php', {
+    // Create Dummy Order
+    fetch('create_dummy_order.php', {
         method: 'POST',
         body: formData
     })
     .then(res => res.json())
     .then(data => {
         if(data.status === 'success') {
-            var options = {
-                "key": data.key,
-                "amount": data.amount,
-                "currency": "INR",
-                "name": "Clothing Store",
-                "description": "Order Payment",
-                "order_id": data.order_id,
-                "handler": function (response){
-                    // Verify Payment
-                    const verifyForm = document.createElement('form');
-                    verifyForm.method = 'POST';
-                    verifyForm.action = 'verify_razorpay_payment.php';
-                    
-                    // Add original form data
-                    for(var pair of formData.entries()) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = pair[0];
-                        input.value = pair[1];
-                        verifyForm.appendChild(input);
-                    }
-                    
-                    // Add Razorpay data
-                    const fields = ['razorpay_payment_id', 'razorpay_order_id', 'razorpay_signature'];
-                    fields.forEach(field => {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = field;
-                        input.value = response[field];
-                        verifyForm.appendChild(input);
-                    });
-                    
-                    document.body.appendChild(verifyForm);
-                    verifyForm.submit();
-                },
-                "prefill": {
-                    "name": data.user_name,
-                    "email": data.user_email,
-                    "contact": data.user_contact
-                },
-                "theme": {
-                    "color": "#3399cc"
-                }
-            };
-            var rzp1 = new Razorpay(options);
-            rzp1.on('payment.failed', function (response){
-                alert("Payment Failed: " + response.error.description);
-            });
-            rzp1.open();
+            // Open Dummy Payment Modal
+            document.getElementById('payAmount').innerText = '₹' + data.amount;
+            window.currentOrderId = data.order_id; // Store order ID
+            var myModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            myModal.show();
         } else {
             alert(data.message);
         }
@@ -344,6 +345,40 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         console.error(err);
         alert('Something went wrong. Please try again.');
     });
+});
+
+// Handle Dummy Payment Submission
+document.getElementById('dummyPaymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('payBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Processing...';
+    btn.disabled = true;
+    
+    // Simulate network delay
+    setTimeout(() => {
+        // Create a hidden form to submit success to backend
+        const verifyForm = document.createElement('form');
+        verifyForm.method = 'POST';
+        verifyForm.action = 'verify_dummy_payment.php';
+        
+        const inputId = document.createElement('input');
+        inputId.type = 'hidden';
+        inputId.name = 'order_id';
+        inputId.value = window.currentOrderId;
+        
+        const inputStatus = document.createElement('input');
+        inputStatus.type = 'hidden';
+        inputStatus.name = 'payment_status';
+        inputStatus.value = 'success';
+        
+        verifyForm.appendChild(inputId);
+        verifyForm.appendChild(inputStatus);
+        document.body.appendChild(verifyForm);
+        verifyForm.submit();
+        
+    }, 2000); // 2 second delay
 });
 </script>
 
