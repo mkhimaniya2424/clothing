@@ -156,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fa fa-envelope"></i>
                 </div>
                 <h5 class="fw-bold mb-3">Email Us</h5>
-                <p class="text-muted mb-2"><a href="mailto:support@clothingbrand.com" class="text-decoration-none text-muted">support@clothingbrand.com</a></p>
+                <p class="text-muted mb-2"><a href="mailto:clothinsite60@gmail.com" class="text-decoration-none text-muted">support@clothingbrand.com</a></p>
                 <p class="text-muted mb-0"><small>We reply within 24 hours</small></p>
             </div>
         </div>

@@ -245,6 +245,7 @@ if (isset($con)) {
                     <li class="dropdown-header fw-bold">Hello, <?= htmlspecialchars($_SESSION['user']['username'] ?? 'User'); ?></li>
                     <li><a class="dropdown-item" href="profile.php"><i class="fa fa-user me-2"></i>Profile</a></li>
                     <li><a class="dropdown-item" href="orders.php"><i class="fa fa-box me-2"></i>My Orders</a></li>
+                    <li><a class="dropdown-item" href="my_messages.php"><i class="fa fa-envelope me-2"></i>My Messages</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="logout.php"><i class="fa fa-sign-out-alt me-2"></i>Logout</a></li>
                 <?php endif; ?>
