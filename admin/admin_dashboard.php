@@ -171,25 +171,7 @@ if($checkOrdersTable->num_rows > 0) {
             </div>
         </div>
 
-        <!-- Return Requests -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card stat-card border-0 shadow-sm" style="border-left-color: #dc3545;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="stat-icon me-3" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white;">
-                            <i class="fa fa-undo"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <p class="text-muted mb-1 small">Return Requests</p>
-                            <h3 class="mb-0"><?= $returns ?></h3>
-                        </div>
-                    </div>
-                    <a href="admin_manage-returns.php" class="btn btn-sm btn-outline-danger mt-3 w-100">
-                        <i class="fa fa-arrow-right me-1"></i>View Returns
-                    </a>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <!-- Statistics Cards Row 2 -->

@@ -12,16 +12,7 @@ if (!isset($_SESSION['admin'])) {
 /* REMOVED CLOAPI STOCK NOTIFICATION COMPLETELY */
 $notificationCount = 0;
 
-$unreadCount = 0;
-include_once("../db_connect.php");
-// Check if contact_messages table exists
-$checkTable = $con->query("SHOW TABLES LIKE 'contact_messages'");
-if ($checkTable && $checkTable->num_rows > 0) {
-    $res = $con->query("SELECT COUNT(*) as cnt FROM contact_messages WHERE status='pending'");
-    if ($res) {
-        $unreadCount = $res->fetch_assoc()['cnt'];
-    }
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,12 +113,12 @@ if ($checkTable && $checkTable->num_rows > 0) {
     <a href="admin_manage-brands.php" class="sidebar-link"><i class="fa fa-tags me-2"></i>Manage Brands</a>
     <a href="admin_manage-products.php" class="sidebar-link"><i class="fa fa-box-open me-2"></i>Manage Products</a>
     <a href="admin_manage-orders.php" class="sidebar-link"><i class="fa fa-shopping-cart me-2"></i>Manage Orders</a>
-    <a href="admin_manage-returns.php" class="sidebar-link"><i class="fa fa-undo me-2"></i>Return Requests</a>
+
     <a href="admin_manage-wishlist.php" class="sidebar-link"><i class="fa fa-heart me-2"></i>Manage Wishlist</a>
     <a href="admin_manage-cart.php" class="sidebar-link"><i class="fa fa-cart-plus me-2"></i>Manage Cart</a>
     <a href="admin_manage-offers.php" class="sidebar-link"><i class="fa fa-credit-card me-2"></i>Manage Offers</a>
     <a href="admin_manage-users.php" class="sidebar-link"><i class="fa fa-users me-2"></i>Manage Users</a>
-    <a href="admin_manage-contact.php" class="sidebar-link"><i class="fa fa-envelope me-2"></i>Messages</a>
+
     <a href="admin_manage-reviews.php" class="sidebar-link"><i class="fa fa-star me-2"></i>Manage Reviews</a>
 
     <a href="admin_revenue.php" class="sidebar-link"><i class="fa fa-chart-line me-2"></i>Revenue</a>
@@ -143,7 +134,7 @@ if ($checkTable && $checkTable->num_rows > 0) {
             <?php
             // Count low stock notifications
             $stockNotifCount = 0;
-            $stockRes = $con->query("SELECT COUNT(*) as cnt FROM product_stock WHERE stock <= 0");
+            $stockRes = $con->query("SELECT COUNT(*) as cnt FROM products WHERE stock <= 0");
             if ($stockRes) {
                 $stockNotifCount = $stockRes->fetch_assoc()['cnt'];
             }
@@ -156,15 +147,7 @@ if ($checkTable && $checkTable->num_rows > 0) {
             <?php endif; ?>
         </a>
 
-        <!-- Messages -->
-        <a href="admin_manage-contact.php" class="me-3 position-relative text-dark">
-            <i class="fa fa-envelope fs-5"></i>
-            <?php if(!empty($unreadCount) && $unreadCount > 0): ?>
-                <span class="badge bg-primary position-absolute top-0 start-100 translate-middle rounded-pill">
-                    <?= $unreadCount ?>
-                </span>
-            <?php endif; ?>
-        </a>
+
 
         <!-- Profile Dropdown -->
         <div class="dropdown">

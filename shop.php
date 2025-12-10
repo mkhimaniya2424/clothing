@@ -37,9 +37,8 @@ while($b = $brandRes->fetch_assoc()) {
    BUILD PRODUCT QUERY
 ------------------------------*/
 $sql = "
-    SELECT p.*, ps.stock 
+    SELECT p.*
     FROM products p
-    LEFT JOIN product_stock ps ON p.id = ps.product_id
     WHERE p.status='active'
 ";
 

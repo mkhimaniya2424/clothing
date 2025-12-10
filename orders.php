@@ -47,21 +47,7 @@ function getOrderItems($con, $order_id) {
     return $items;
 }
 
-// Function to get return request for an order
-function getReturnRequest($con, $order_id) {
-    // Check if table exists
-    $tableCheck = $con->query("SHOW TABLES LIKE 'return_requests'");
-    if ($tableCheck && $tableCheck->num_rows > 0) {
-        $stmt = $con->prepare("SELECT * FROM return_requests WHERE order_id = ? ORDER BY created_at DESC LIMIT 1");
-        $stmt->bind_param("i", $order_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $return = $result->fetch_assoc();
-        $stmt->close();
-        return $return;
-    }
-    return null;
-}
+
 
 // Function to get status badge class
 function getStatusBadge($status) {
@@ -72,7 +58,7 @@ function getStatusBadge($status) {
         'packed' => 'bg-primary',
         'shipped' => 'bg-primary',
         'delivered' => 'bg-success',
-        'returned' => 'bg-warning text-dark',
+
         'cancelled' => 'bg-danger'
     ];
     return $badges[$status] ?? 'bg-secondary';
@@ -240,42 +226,7 @@ function getStatusBadge($status) {
                     </div>
                 </div>
                 
-                <?php 
-                // Get return request if exists
-                $returnRequest = getReturnRequest($con, $order['id']);
-                if ($returnRequest): 
-                    $returnStatusClass = 'secondary';
-                    switch($returnRequest['status']) {
-                        case 'pending': $returnStatusClass = 'warning'; break;
-                        case 'approved': $returnStatusClass = 'info'; break;
-                        case 'rejected': $returnStatusClass = 'danger'; break;
-                        case 'completed': $returnStatusClass = 'success'; break;
-                    }
-                ?>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <div class="alert alert-<?= $returnStatusClass ?> border-<?= $returnStatusClass ?> mb-0">
-                            <div class="d-flex align-items-start">
-                                <i class="fa fa-undo fa-2x me-3"></i>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-2"><i class="fa fa-info-circle me-2"></i>Return Request</h6>
-                                    <p class="mb-1"><strong>Reason:</strong> <?= ucfirst(str_replace('_', ' ', $returnRequest['reason'])) ?></p>
-                                    <?php if (!empty($returnRequest['comments'])): ?>
-                                    <p class="mb-1"><strong>Comments:</strong> <?= htmlspecialchars($returnRequest['comments']) ?></p>
-                                    <?php endif; ?>
-                                    <p class="mb-1"><strong>Requested on:</strong> <?= date('M j, Y \a\t g:i A', strtotime($returnRequest['created_at'])) ?></p>
-                                    <p class="mb-0">
-                                        <strong>Status:</strong> 
-                                        <span class="badge bg-<?= $returnStatusClass ?>">
-                                            <?= ucfirst($returnRequest['status']) ?>
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
+
             </div>
             
             <div class="card-footer bg-white">
@@ -288,11 +239,7 @@ function getStatusBadge($status) {
                         <i class="fa fa-times me-1"></i>Cancel Order
                     </button>
                     <?php endif; ?>
-                    <?php if ($order['order_status'] === 'delivered'): ?>
-                    <a href="returns.php#returnForm" class="btn btn-sm btn-outline-warning" onclick="sessionStorage.setItem('selectedOrderId', <?= $order['id'] ?>)">
-                        <i class="fa fa-undo me-1"></i>Request Return
-                    </a>
-                    <?php endif; ?>
+
                 </div>
             </div>
         </div>

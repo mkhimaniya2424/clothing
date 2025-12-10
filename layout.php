@@ -223,7 +223,7 @@ if (isset($con)) {
         <li class="nav-item"><a class="nav-link" href="home.php">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="shop.php">Shop</a></li>
         <li class="nav-item"><a class="nav-link" href="offers.php">Offers</a></li>
-        <li class="nav-item"><a class="nav-link" href="returns.php">Returns</a></li>
+
         <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
         <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
       </ul>
@@ -296,7 +296,7 @@ if (isset($con)) {
               <h5>Customer Care</h5>
               <a href="faq.php">FAQ</a>
               <a href="shipping_policy.php">Shipping Policy</a>
-              <a href="returns.php">Returns & Exchanges</a>
+
               <a href="size_guide.php">Size Guide</a>
               <a href="privacy_policy.php">Privacy Policy</a>
           </div>

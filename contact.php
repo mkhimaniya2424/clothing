@@ -225,9 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="faq.php" class="btn btn-outline-primary">
                     <i class="fa fa-question-circle me-2"></i>View FAQs
                 </a>
-                <a href="returns.php" class="btn btn-outline-secondary">
-                    <i class="fa fa-undo me-2"></i>Returns Policy
-                </a>
+
                 <a href="shipping_policy.php" class="btn btn-outline-secondary">
                     <i class="fa fa-shipping-fast me-2"></i>Shipping Info
                 </a>

@@ -47,7 +47,7 @@ $stats = [
     'confirmed' => 0,
     'shipped' => 0,
     'delivered' => 0,
-    'returned' => 0,
+
     'cancelled' => 0
 ];
 
@@ -224,9 +224,7 @@ $msg = $_GET['msg'] ?? '';
                 <a href="?status_filter=delivered" class="btn filter-btn <?= $statusFilter === 'delivered' ? 'active' : 'btn-outline-success' ?>">
                     <i class="fa fa-check-double me-1"></i>Delivered
                 </a>
-                <a href="?status_filter=returned" class="btn filter-btn <?= $statusFilter === 'returned' ? 'active' : 'btn-outline-warning' ?>">
-                    <i class="fa fa-undo me-1"></i>Returned
-                </a>
+
                 <a href="?status_filter=cancelled" class="btn filter-btn <?= $statusFilter === 'cancelled' ? 'active' : 'btn-outline-danger' ?>">
                     <i class="fa fa-times-circle me-1"></i>Cancelled
                 </a>
@@ -265,10 +263,7 @@ $msg = $_GET['msg'] ?? '';
                     $statusClass = 'bg-success'; 
                     $statusIcon = 'fa-check-double';
                     break;
-                case 'returned': 
-                    $statusClass = 'bg-warning'; 
-                    $statusIcon = 'fa-undo';
-                    break;
+
                 case 'cancelled': 
                     $statusClass = 'bg-danger'; 
                     $statusIcon = 'fa-times-circle';
@@ -449,7 +444,7 @@ $msg = $_GET['msg'] ?? '';
                                                 <option value="packed" <?= $order['order_status'] == 'packed' ? 'selected' : '' ?>>📦 Packed</option>
                                                 <option value="shipped" <?= $order['order_status'] == 'shipped' ? 'selected' : '' ?>>🚚 Shipped</option>
                                                 <option value="delivered" <?= $order['order_status'] == 'delivered' ? 'selected' : '' ?>>✔️ Delivered</option>
-                                                <option value="returned" <?= $order['order_status'] == 'returned' ? 'selected' : '' ?>>🔄 Returned</option>
+
                                                 <option value="cancelled" <?= $order['order_status'] == 'cancelled' ? 'selected' : '' ?>>❌ Cancelled</option>
                                             </select>
                                         </div>

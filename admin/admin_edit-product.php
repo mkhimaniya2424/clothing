@@ -17,8 +17,7 @@ if ($res->num_rows === 0) {
 $product = $res->fetch_assoc();
 
 // Fetch Stock
-$stockRes = $con->query("SELECT stock FROM product_stock WHERE product_id=$id");
-$stock = ($stockRes->num_rows > 0) ? $stockRes->fetch_assoc()['stock'] : 0;
+$stock = $product['stock'] ?? 0;
 
 /* ---------------- LOAD BRANDS & CATEGORIES ---------------- */
 $brands = $con->query("SELECT name FROM brands ORDER BY name")->fetch_all(MYSQLI_ASSOC);
@@ -88,12 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $images_json = json_encode(array_values($updatedImages)); // Re-index array
 
-        $stmt = $con->prepare("UPDATE products SET title=?, price=?, category_main=?, category_sub=?, category_type=?, category_brand=?, sizes=?, fabric=?, highlight=?, description=?, status=?, images=? WHERE id=?");
-        $stmt->bind_param("sdssssssssssi", $title, $price, $category_main, $category_sub, $category_type, $category_brand, $sizes, $fabric, $highlight, $description, $status, $images_json, $id);
+        $stmt = $con->prepare("UPDATE products SET title=?, price=?, category_main=?, category_sub=?, category_type=?, category_brand=?, sizes=?, fabric=?, highlight=?, description=?, status=?, images=?, stock=? WHERE id=?");
+        $stmt->bind_param("sdsssssssssssi", $title, $price, $category_main, $category_sub, $category_type, $category_brand, $sizes, $fabric, $highlight, $description, $status, $images_json, $newStock, $id);
         
         if ($stmt->execute()) {
             // Update Stock
-            $con->query("INSERT INTO product_stock (product_id, stock) VALUES ($id, $newStock) ON DUPLICATE KEY UPDATE stock=$newStock");
+
             $msg = "Product updated successfully!";
             // Refresh data
             $product = $con->query("SELECT * FROM products WHERE id=$id")->fetch_assoc();

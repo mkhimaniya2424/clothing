@@ -29,8 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review'])) {
 
 
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$stmt = $con->prepare("SELECT p.*, ps.stock FROM products p 
-                       LEFT JOIN product_stock ps ON p.id = ps.product_id 
+$stmt = $con->prepare("SELECT p.* FROM products p 
                        WHERE p.id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();

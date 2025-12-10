@@ -7,10 +7,9 @@ $notifications = [];
 
 // Check for out-of-stock products
 $sql = "
-    SELECT p.id, p.title, ps.stock 
+    SELECT p.id, p.title, p.stock 
     FROM products p 
-    JOIN product_stock ps ON p.id = ps.product_id 
-    WHERE ps.stock <= 0
+    WHERE p.stock <= 0
 ";
 $res = $con->query($sql);
 if ($res) {

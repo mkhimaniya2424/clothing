@@ -334,13 +334,7 @@ $title_page = "Home";
                 <h5>Free Shipping</h5>
                 <p class="text-muted">On all orders above ₹999</p>
             </div>
-            <div class="col-md-3 text-center">
-                <div class="mb-3">
-                    <i class="fa fa-undo fa-3x text-primary"></i>
-                </div>
-                <h5>Easy Returns</h5>
-                <p class="text-muted">30-day return policy</p>
-            </div>
+
             <div class="col-md-3 text-center">
                 <div class="mb-3">
                     <i class="fa fa-lock fa-3x text-primary"></i>

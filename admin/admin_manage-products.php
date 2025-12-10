@@ -6,9 +6,8 @@ require_once '../db_connect.php';
 /* ---------------- FETCH PRODUCTS ---------------- */
 $res = $con->query("
     SELECT p.id, p.title, p.price, p.category_brand, p.category_main, p.category_sub,
-           p.status, ps.stock, p.images
+           p.status, p.stock, p.images
     FROM products p
-    LEFT JOIN product_stock ps ON p.id = ps.product_id
     ORDER BY p.id DESC
 ");
 
@@ -81,22 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $con->prepare("
                 INSERT INTO products 
                 (title, price, category_main, category_sub, category_type, category_brand, sizes, fabric,
-                highlight, description, images, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                highlight, description, images, status, stock, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ");
             $stmt->bind_param(
-                "sdssssssssss",
+                "sdssssssssssi",
                 $title, $price, $category_main, $category_sub, $category_type,
                 $category_brand, $sizes, $fabric, $highlight, $description,
-                $images_json, $status
+                $images_json, $status, $stock
             );
 
             if($stmt->execute()){
-                $pid = $stmt->insert_id;
-                $st2 = $con->prepare("INSERT INTO product_stock (product_id, stock) VALUES (?, ?)");
-                $st2->bind_param("ii",$pid,$stock);
-                $st2->execute();
-                $st2->close();
                 $msg = "Product added successfully!";
             } else $msg = "Error: ".$stmt->error;
             $stmt->close();
@@ -107,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(isset($_POST['update_stock'])){
         $updateId = intval($_POST['product_id']);
         $newStock = intval($_POST['stock']);
-        $stmt = $con->prepare("INSERT INTO product_stock (product_id, stock) VALUES (?, ?) ON DUPLICATE KEY UPDATE stock=?");
-        $stmt->bind_param("iii",$updateId,$newStock,$newStock);
+        $stmt = $con->prepare("UPDATE products SET stock=? WHERE id=?");
+        $stmt->bind_param("ii",$newStock,$updateId);
         $stmt->execute();
         $stmt->close();
         $msg = "Stock updated!";
@@ -129,7 +123,6 @@ if(isset($_GET['toggle_id'])){
 if(isset($_GET['delete_id'])){
     $pid = intval($_GET['delete_id']);
     $con->query("DELETE FROM products WHERE id=$pid");
-    $con->query("DELETE FROM product_stock WHERE product_id=$pid");
     header("Location: admin_manage-products.php");
     exit;
 }
