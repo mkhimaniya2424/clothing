@@ -14,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm_password = $_POST['confirm_password'];
     $phone = mysqli_real_escape_string($con, $_POST['phone']);
     $gender = mysqli_real_escape_string($con, $_POST['gender']);
-    $dob = mysqli_real_escape_string($con, $_POST['dob']);
     
     // Address Details
     $address_line1 = mysqli_real_escape_string($con, $_POST['address_line1']);
@@ -44,8 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             try {
                 // Insert into users table
-                $insert_user = "INSERT INTO users (username, email, password_hash, phone, gender, dob) 
-                                VALUES ('$username', '$email', '$password_hash', '$phone', '$gender', '$dob')";
+                $insert_user = "INSERT INTO users (username, email, password_hash, phone, gender) 
+                                VALUES ('$username', '$email', '$password_hash', '$phone', '$gender')";
                 
                 if (!mysqli_query($con, $insert_user)) {
                     throw new Exception("Error creating user: " . mysqli_error($con));
@@ -121,15 +120,9 @@ ob_start();
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="dob" class="form-label">Date of Birth</label>
-                            <input type="date" class="form-control" id="dob" name="dob">
-                        </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone">
                     </div>
 
                     <div class="mb-3">
