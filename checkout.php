@@ -178,7 +178,7 @@ $final_amount = $total - $discount_amount;
                     <select name="payment_method" id="payment_method" class="form-control" required>
                         <option value="">Select Payment Method</option>
                         <option value="cod">Cash on Delivery</option>
-                        <option value="online">Pay Online (Card/UPI/Netbanking)</option>
+                        <option value="online">Pay Online (Cashfree)</option>
                     </select>
                 </div>
 
@@ -266,53 +266,14 @@ $final_amount = $total - $discount_amount;
     </div>
 </section>
 
-<!-- Dummy Payment Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title"><i class="fa fa-credit-card me-2"></i>Secure Payment</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="text-center mb-4">
-            <h3 id="payAmount" class="fw-bold text-primary"></h3>
-            <p class="text-muted">Completing transaction securely</p>
-        </div>
-        
-        <form id="dummyPaymentForm">
-            <div class="mb-3">
-                <label class="form-label">Card Number</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fa fa-credit-card"></i></span>
-                    <input type="text" class="form-control" placeholder="0000 0000 0000 0000" maxlength="19" required>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6 mb-3">
-                    <label class="form-label">Expiry</label>
-                    <input type="text" class="form-control" placeholder="MM/YY" maxlength="5" required>
-                </div>
-                <div class="col-6 mb-3">
-                    <label class="form-label">CVV</label>
-                    <input type="password" class="form-control" placeholder="123" maxlength="3" required>
-                </div>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Card Holder Name</label>
-                <input type="text" class="form-control" placeholder="Name on Card" required>
-            </div>
-            
-            <button type="submit" class="btn btn-success w-100 btn-lg mt-2" id="payBtn">
-                Pay Now
-            </button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Cashfree JS SDK -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 
 <script>
+const cashfree = Cashfree({
+    mode: "sandbox" // or "production"
+});
+
 document.getElementById('checkoutForm').addEventListener('submit', function(e) {
     const method = document.getElementById('payment_method').value;
     
@@ -320,65 +281,52 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
         return; // Allow normal submission for COD
     }
     
-    e.preventDefault(); // Stop form for Online Payment
-    
-    const formData = new FormData(this);
-    
-    // Create Dummy Order
-    fetch('create_dummy_order.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if(data.status === 'success') {
-            // Open Dummy Payment Modal
-            document.getElementById('payAmount').innerText = '₹' + data.amount;
-            window.currentOrderId = data.order_id; // Store order ID
-            var myModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-            myModal.show();
-        } else {
-            alert(data.message);
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Something went wrong. Please try again.');
-    });
-});
-
-// Handle Dummy Payment Submission
-document.getElementById('dummyPaymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const btn = document.getElementById('payBtn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Processing...';
-    btn.disabled = true;
-    
-    // Simulate network delay
-    setTimeout(() => {
-        // Create a hidden form to submit success to backend
-        const verifyForm = document.createElement('form');
-        verifyForm.method = 'POST';
-        verifyForm.action = 'verify_dummy_payment.php';
+    if (method === 'online') {
+        e.preventDefault(); // Stop form for Online Payment
         
-        const inputId = document.createElement('input');
-        inputId.type = 'hidden';
-        inputId.name = 'order_id';
-        inputId.value = window.currentOrderId;
+        const formData = new FormData(this);
         
-        const inputStatus = document.createElement('input');
-        inputStatus.type = 'hidden';
-        inputStatus.name = 'payment_status';
-        inputStatus.value = 'success';
+        // Show loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Processing...';
+        submitBtn.disabled = true;
         
-        verifyForm.appendChild(inputId);
-        verifyForm.appendChild(inputStatus);
-        document.body.appendChild(verifyForm);
-        verifyForm.submit();
-        
-    }, 2000); // 2 second delay
+        // Create Cashfree Order
+        fetch('cashfree_create_order.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.status === 'success') {
+                // Initiate Cashfree Checkout
+                cashfree.checkout({
+                    paymentSessionId: data.payment_session_id,
+                    returnUrl: data.return_url || null // Optional, handled by backend usually but good for redirect
+                }).then(function(result){
+                    if(result.error){
+                        alert(result.error.message);
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                    if(result.redirect){
+                        console.log("Redirection");
+                    }
+                });
+            } else {
+                alert(data.message || 'Failed to create payment order. Please try again.');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Something went wrong. Please try again.');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
 });
 </script>
 

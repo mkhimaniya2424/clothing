@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 10, 2025 at 02:02 PM
+-- Generation Time: Dec 11, 2025 at 07:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -90,8 +90,7 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`id`, `user_id`, `product_id`, `quantity`, `created_at`, `updated_at`) VALUES
-(9, 1, 35, 1, '2025-12-10 05:06:18', '2025-12-10 05:06:18'),
-(10, 1, 44, 1, '2025-12-10 12:43:04', '2025-12-10 12:43:04');
+(9, 1, 35, 1, '2025-12-10 05:06:18', '2025-12-10 05:06:18');
 
 -- --------------------------------------------------------
 
@@ -134,6 +133,13 @@ CREATE TABLE `contact_messages` (
   `status` enum('pending','read','replied') DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `contact_messages`
+--
+
+INSERT INTO `contact_messages` (`id`, `name`, `email`, `phone`, `subject`, `message`, `status`, `created_at`) VALUES
+(1, 'meghana', 'meghanaahir1@gmail.com', '8320552427', 'for know more', 'bjknlkm;m', 'replied', '2025-12-10 16:46:24');
 
 -- --------------------------------------------------------
 
@@ -188,10 +194,10 @@ CREATE TABLE `orders` (
 INSERT INTO `orders` (`id`, `user_id`, `shipping_address`, `address_id`, `total_amount`, `discount_amount`, `final_amount`, `payment_method`, `payment_status`, `order_status`, `created_at`, `updated_at`) VALUES
 (2, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'cod', 'pending', 'pending', '2025-12-03 04:11:04', '2025-12-03 04:11:04'),
 (3, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'upi', 'pending', 'cancelled', '2025-12-03 04:31:35', '2025-12-03 04:31:49'),
-(4, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'upi', 'pending', 'shipped', '2025-12-03 04:47:11', '2025-12-03 05:31:30'),
+(4, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 0.00, 1000.00, 'upi', 'pending', 'delivered', '2025-12-03 04:47:11', '2025-12-10 14:24:42'),
 (5, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 200.00, 800.00, 'upi', 'pending', 'delivered', '2025-12-03 04:53:47', '2025-12-03 05:31:25'),
 (6, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 1000.00, 200.00, 800.00, 'cod', 'pending', 'packed', '2025-12-03 05:16:40', '2025-12-06 16:32:13'),
-(7, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 2198.00, 0.00, 2198.00, 'upi', 'pending', 'pending', '2025-12-09 06:07:46', '2025-12-09 06:07:46');
+(7, 1, 'vajdi, rajkot, gujarat - 360005, india', 1, 2198.00, 0.00, 2198.00, 'upi', 'pending', 'confirmed', '2025-12-09 06:07:46', '2025-12-10 14:24:53');
 
 -- --------------------------------------------------------
 
@@ -308,7 +314,7 @@ INSERT INTO `products` (`id`, `title`, `price`, `category_main`, `category_sub`,
 (37, 'Kids Hoodie Sweatshirt', 999.00, '3', 'top wear', 'Hoodies', 'Adidas', '2-3y,4-5y,6-7y,8-9y,10-11y', 'fleece', 'Warm and cozy, Fun colors, Soft interior', 'Cozy hoodie to keep kids warm during cold weather and outdoor activities.', '[\"uploads\\/products\\/1765252595_eb8e009984.jpg\",\"uploads\\/products\\/1765252595_a389a10657.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 45),
 (39, 'Girls Pink Dress', 1199.00, '3', 'dresses', 'Casual Dress', 'gucci', '2-3y,4-5y,6-7y,8-9y,10-11y', 'cotton', 'Pretty design, Comfortable, Easy care', 'Adorable pink dress perfect for parties and special occasions.', '[\"uploads\\/products\\/1765252438_11c39c7bf6.jpg\",\"uploads\\/products\\/1765252438_8fe523106e.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 50),
 (40, 'Girls Floral Dress', 1299.00, '3', 'dresses', 'Party Dress', 'gucci', '2-3y,4-5y,6-7y,8-9y,10-11y', 'cotton blend', 'Floral print, Elegant, Comfortable', 'Beautiful floral dress for birthday parties and celebrations.', '[\"uploads\\/products\\/1765252381_d9710e29c1.jpg\",\"uploads\\/products\\/1765252381_3927ca7393.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 45),
-(42, 'Kids Polo Shirt', 699.00, '3', 'top wear', 'Polo', 'lacoste', '2-3y,4-5y,6-7y,8-9y,10-11y', 'pique cotton', 'Smart casual, Collar design, Comfortable', 'Classic polo shirt perfect for school and semi-formal occasions.', '[\"uploads\\/products\\/1765252319_7923dd2a9b.jpg\",\"uploads\\/products\\/1765252319_97a4918c09.jpg\",\"uploads\\/products\\/1765252319_142d75250b.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 3),
+(42, 'Kids Polo Shirt', 699.00, '3', 'top wear', 'Polo', 'lacoste', '2-3y,4-5y,6-7y,8-9y,10-11y', 'pique cotton', 'Smart casual, Collar design, Comfortable', 'Classic polo shirt perfect for school and semi-formal occasions.', '[\"uploads\\/products\\/1765252319_7923dd2a9b.jpg\",\"uploads\\/products\\/1765252319_97a4918c09.jpg\",\"uploads\\/products\\/1765252319_142d75250b.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 20:05:53', 20),
 (43, 'Kids Sweatpants', 799.00, '3', 'bottom wear', 'Pants', 'Adidas', '2-3y,4-5y,6-7y,8-9y,10-11y', 'cotton fleece', 'Comfortable, Elastic waist, Soft fabric', 'Comfortable sweatpants perfect for lounging and casual wear.', '[\"uploads\\/products\\/1765252163_1163ef910f.jpg\",\"uploads\\/products\\/1765252163_c42a176aec.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 55),
 (44, 'Girls Leggings', 499.00, '3', 'bottom wear', 'Leggings', 'lacoste', '2-3y,4-5y,6-7y,8-9y,10-11y', 'cotton spandex', 'Stretchy, Comfortable, Versatile', 'Comfortable leggings perfect for active play and everyday wear.', '[\"uploads\\/products\\/1765252112_bbfab9f871.jpg\",\"uploads\\/products\\/1765252112_7d9da8bcea.webp\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 60),
 (45, 'Kids Denim Jacket', 1499.00, '3', 'outerwear', 'Jackets', 'gucci', '2-3y,4-5y,6-7y,8-9y,10-11y', 'denim', 'Classic style, Durable, Versatile', 'Trendy denim jacket that pairs well with any outfit.', '[\"uploads\\/products\\/1765252017_f836d4f2cc.jpg\",\"uploads\\/products\\/1765252017_1bb753877f.jpg\"]', 'active', '2025-12-04 19:44:16', '2025-12-10 18:16:17', 40),
@@ -377,7 +383,6 @@ CREATE TABLE `users` (
   `phone` varchar(20) DEFAULT NULL,
   `profile_pic` varchar(255) DEFAULT NULL,
   `gender` enum('male','female','other') DEFAULT NULL,
-  `dob` date DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -387,8 +392,8 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `phone`, `profile_pic`, `gender`, `dob`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'megha', 'meghanaahir1@gmail.com', '$2y$10$.Z0rwXH0yzD/AndTzNTLge90jRjE3.DepDVknXF/uCY8JgAjNtJli', '9099112071', NULL, 'female', '2024-07-25', 'active', '2025-12-02 12:13:19', '2025-12-04 04:08:41');
+INSERT INTO `users` (`id`, `username`, `email`, `password_hash`, `phone`, `profile_pic`, `gender`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'megha', 'meghanaahir1@gmail.com', '$2y$10$.Z0rwXH0yzD/AndTzNTLge90jRjE3.DepDVknXF/uCY8JgAjNtJli', '9099112071', NULL, 'female', 'active', '2025-12-02 12:13:19', '2025-12-10 14:14:37');
 
 -- --------------------------------------------------------
 
@@ -617,7 +622,7 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `offers`
