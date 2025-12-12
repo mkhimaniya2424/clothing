@@ -25,7 +25,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $address_type = mysqli_real_escape_string($con, $_POST['address_type']);
 
     // Validation
-    if ($password !== $confirm_password) {
+    if (empty($username) || empty($email) || empty($password) || empty($confirm_password) || empty($phone) || empty($address_line1) || empty($city) || empty($state) || empty($postal_code)) {
+        $error = "Please fill in all required fields.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Invalid email format.";
+    } elseif (!preg_match("/^[0-9]{10}$/", $phone)) {
+        $error = "Invalid phone number. Must be 10 digits.";
+    } elseif (!preg_match("/^[0-9]{6}$/", $postal_code)) {
+        $error = "Invalid postal code. Must be 6 digits.";
+    } elseif (strlen($password) < 8 || !preg_match("/[A-Z]/", $password) || !preg_match("/[a-z]/", $password) || !preg_match("/[0-9]/", $password) || !preg_match("/[\W]/", $password)) {
+        $error = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.";
+    } elseif ($password !== $confirm_password) {
         $error = "Passwords do not match.";
     } else {
         // Check if user exists
@@ -101,28 +111,33 @@ ob_start();
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            <input type="text" class="form-control" id="username" name="username" data-validation="required alpha" required>
+                            <span id="usernameError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" data-validation="required email" required>
+                            <span id="emailError" class="text-danger small" style="display:none;"></span>
                         </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control" id="password" name="password" data-validation="required strongPassword" required>
+                            <span id="passwordError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" data-validation="required confirmPassword" data-password-id="password" required>
+                            <span id="confirm_passwordError" class="text-danger small" style="display:none;"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="phone" class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phone" name="phone">
+                        <input type="tel" class="form-control" id="phone" name="phone" data-validation="required phone">
+                        <span id="phoneError" class="text-danger small" style="display:none;"></span>
                     </div>
 
                     <div class="mb-3">
@@ -146,7 +161,8 @@ ob_start();
 
                     <div class="mb-3">
                         <label for="address_line1" class="form-label">Address Line 1</label>
-                        <input type="text" class="form-control" id="address_line1" name="address_line1" required>
+                        <input type="text" class="form-control" id="address_line1" name="address_line1" data-validation="required" required>
+                        <span id="address_line1Error" class="text-danger small" style="display:none;"></span>
                     </div>
 
                     <div class="mb-3">
@@ -157,18 +173,21 @@ ob_start();
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="city" class="form-label">City</label>
-                            <input type="text" class="form-control" id="city" name="city" required>
+                            <input type="text" class="form-control" id="city" name="city" data-validation="required alpha" required>
+                            <span id="cityError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="state" class="form-label">State</label>
-                            <input type="text" class="form-control" id="state" name="state" required>
+                            <input type="text" class="form-control" id="state" name="state" data-validation="required alpha" required>
+                            <span id="stateError" class="text-danger small" style="display:none;"></span>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="postal_code" class="form-label">Postal Code</label>
-                            <input type="text" class="form-control" id="postal_code" name="postal_code">
+                            <input type="text" class="form-control" id="postal_code" name="postal_code" data-validation="required pincode">
+                            <span id="postal_codeError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label for="country" class="form-label">Country</label>
@@ -201,3 +220,4 @@ ob_start();
 $content = ob_get_clean();
 include 'layout.php';
 ?>
+<script src="js/validate.js"></script>

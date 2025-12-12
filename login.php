@@ -19,6 +19,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email_username = trim($_POST['email_username']);
     $password = $_POST['password'];
 
+    if (empty($email_username) || empty($password)) {
+        $error = "Please fill in all fields.";
+    } else {
+
     // Secure prepared statement
     $stmt = $con->prepare("SELECT * FROM users WHERE email = ? OR username = ?");
     $stmt->bind_param("ss", $email_username, $email_username);
@@ -61,7 +65,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "User not found.";
     }
 
-    $stmt->close();
+        $stmt->close();
+    }
 }
 
 ob_start();
@@ -82,16 +87,18 @@ ob_start();
                         <label for="email_username" class="form-label">Email or Username</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa fa-user text-muted"></i></span>
-                            <input type="text" class="form-control border-start-0 ps-0" id="email_username" name="email_username" required>
+                            <input type="text" class="form-control border-start-0 ps-0" id="email_username" name="email_username" data-validation="required" required>
                         </div>
+                        <span id="email_usernameError" class="text-danger small" style="display:none;"></span>
                     </div>
                     
                     <div class="mb-4">
                         <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i class="fa fa-lock text-muted"></i></span>
-                            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" required>
+                            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" data-validation="required" required>
                         </div>
+                        <span id="passwordError" class="text-danger small" style="display:none;"></span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -117,3 +124,4 @@ ob_start();
 $content = ob_get_clean();
 include 'layout.php';
 ?>
+<script src="js/validate.js"></script>
