@@ -97,6 +97,25 @@ $(document).ready(function () {
         errorMessage = "You must agree to the Terms & Conditions.";
       }
 
+      if (!errorMessage && validationType.includes("file")) {
+        if (field[0].files.length > 0) {
+          let file = field[0].files[0];
+          let fileName = file.name;
+          let fileSizeKB = file.size / 1024;
+
+          if (!/\.(jpg|jpeg|png)$/i.test(fileName)) {
+            errorMessage = "Only JPG, JPEG, or PNG files are allowed.";
+          } else if (
+            validationType.includes("filesize") &&
+            fileSizeKB > filesize
+          ) {
+            errorMessage = `File size must be less than ${filesize} KB.`;
+          }
+        } else {
+          errorMessage = "Please upload a file.";
+        }
+      }
+
       if (
         !errorMessage &&
         field.is("select") &&

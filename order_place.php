@@ -26,6 +26,10 @@ if (empty($name) || empty($email) || empty($address) || empty($payment_method)) 
     $_SESSION['error'] = "All fields are required.";
     header("Location: checkout.php");
     exit();
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['error'] = "Invalid email format.";
+    header("Location: checkout.php");
+    exit();
 }
 
 

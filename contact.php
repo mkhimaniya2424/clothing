@@ -15,7 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $message = trim($_POST['message']);
     
     if ($name && $email && $message) {
-        // Save to contact_messages table
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $msg = "Invalid email format.";
+            $msgType = 'danger';
+        } elseif (!empty($phone) && !preg_match("/^[0-9]{10}$/", $phone)) {
+            $msg = "Invalid phone number. Must be 10 digits.";
+            $msgType = 'danger';
+        } else {
+            // Save to contact_messages table
         $stmt = $con->prepare("INSERT INTO contact_messages (name, email, phone, subject, message, status) VALUES (?, ?, ?, ?, ?, 'pending')");
         $stmt->bind_param("sssss", $name, $email, $phone, $subject, $message);
         
@@ -35,7 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = "Error sending message. Please try again.";
             $msgType = 'danger';
         }
-        $stmt->close();
+            $stmt->close();
+        }
     } else {
         $msg = "Please fill in all required fields.";
         $msgType = 'warning';
@@ -175,23 +183,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Your Name <span class="text-danger">*</span></label>
-                            <input type="text" name="name" class="form-control" placeholder="John Doe" required>
+                            <input type="text" name="name" class="form-control" placeholder="John Doe" data-validation="required alpha" required>
+                            <span id="nameError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control" placeholder="john@example.com" required>
+                            <input type="email" name="email" class="form-control" placeholder="john@example.com" data-validation="required email" required>
+                            <span id="emailError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Phone Number</label>
-                            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210">
+                            <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210" data-validation="phone">
+                            <span id="phoneError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Subject <span class="text-danger">*</span></label>
-                            <input type="text" name="subject" class="form-control" placeholder="How can we help?" required>
+                            <input type="text" name="subject" class="form-control" placeholder="How can we help?" data-validation="required" required>
+                            <span id="subjectError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Message <span class="text-danger">*</span></label>
-                            <textarea name="message" rows="6" class="form-control" placeholder="Tell us more about your inquiry..." required></textarea>
+                            <textarea name="message" rows="6" class="form-control" placeholder="Tell us more about your inquiry..." data-validation="required" required></textarea>
+                            <span id="messageError" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="col-12 text-center mt-4">
                             <button type="submit" class="submit-btn btn btn-primary">
@@ -238,3 +251,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $content = ob_get_clean();
 include_once("layout.php");
 ?>
+<script src="js/validate.js"></script>

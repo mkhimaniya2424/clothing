@@ -160,26 +160,30 @@ $final_amount = $total - $discount_amount;
             <form action="order_place.php" method="POST" id="checkoutForm">
                 <div class="mb-3">
                     <label class="fw-bold">Full Name</label>
-                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($name) ?>" required>
+                    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($name) ?>" data-validation="required alpha" required>
+                    <span id="nameError" class="text-danger small" style="display:none;"></span>
                 </div>
 
                 <div class="mb-3">
                     <label class="fw-bold">Email</label>
-                    <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($email) ?>" required>
+                    <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($email) ?>" data-validation="required email" required>
+                    <span id="emailError" class="text-danger small" style="display:none;"></span>
                 </div>
 
                 <div class="mb-3">
                     <label class="fw-bold">Address</label>
-                    <textarea name="address" class="form-control" rows="3" required><?= htmlspecialchars($address_text) ?></textarea>
+                    <textarea name="address" class="form-control" rows="3" data-validation="required" required><?= htmlspecialchars($address_text) ?></textarea>
+                    <span id="addressError" class="text-danger small" style="display:none;"></span>
                 </div>
 
                 <div class="mb-3">
                     <label class="fw-bold">Payment Method</label>
-                    <select name="payment_method" id="payment_method" class="form-control" required>
+                    <select name="payment_method" id="payment_method" class="form-control" data-validation="required" required>
                         <option value="">Select Payment Method</option>
                         <option value="cod">Cash on Delivery</option>
                         <option value="online">Pay Online (Cashfree)</option>
                     </select>
+                    <span id="payment_methodError" class="text-danger small" style="display:none;"></span>
                 </div>
 
                 <input type="hidden" name="total_amount" value="<?= $total ?>">
@@ -334,3 +338,4 @@ document.getElementById('checkoutForm').addEventListener('submit', function(e) {
 $content = ob_get_clean();
 include_once("layout.php");
 ?>
+<script src="js/validate.js"></script>

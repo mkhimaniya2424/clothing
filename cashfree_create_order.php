@@ -37,6 +37,9 @@ if (empty($phone)) {
 if (empty($name) || empty($email) || empty($address)) {
     echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
     exit;
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid email format']);
+    exit;
 }
 
 // Calculate Total Amount (Server-side)

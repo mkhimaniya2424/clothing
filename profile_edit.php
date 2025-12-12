@@ -57,8 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_FILES['profile_photo'])) {
     $city = $con->real_escape_string($_POST['city']);
     $state = $con->real_escape_string($_POST['state']);
     $zip = $con->real_escape_string($_POST['postal_code']);
+    $zip = $con->real_escape_string($_POST['postal_code']);
     $country = $con->real_escape_string($_POST['country']);
 
+    if (!empty($phone) && !preg_match("/^[0-9]{10}$/", $phone)) {
+        $msg = "Invalid phone number. Must be 10 digits.";
+        $msg_type = "danger";
+    } elseif (!preg_match("/^[0-9]{6}$/", $zip)) {
+        $msg = "Invalid postal code. Must be 6 digits.";
+        $msg_type = "danger";
+    } else {
     // Update User Info
     $u_sql = "UPDATE users SET phone='$phone', gender='$gender', dob='$dob' WHERE id='$user_id'";
     $con->query($u_sql);
@@ -77,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_FILES['profile_photo'])) {
     } else {
         $msg = "Error updating profile: " . $con->error;
         $msg_type = "danger";
+    }
     }
 }
 
@@ -160,7 +169,8 @@ $profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Phone</label>
-                                <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>">
+                                <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>" data-validation="phone">
+                                <span id="phoneError" class="text-danger small" style="display:none;"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Date of Birth</label>
@@ -182,7 +192,8 @@ $profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . 
                         <h5 class="text-primary mb-3"><i class="fa fa-map-marker-alt me-2"></i>Address</h5>
                         <div class="mb-3">
                             <label class="form-label">Address Line 1</label>
-                            <input type="text" name="address_line1" class="form-control" value="<?= htmlspecialchars($address['address_line1'] ?? '') ?>" required>
+                            <input type="text" name="address_line1" class="form-control" value="<?= htmlspecialchars($address['address_line1'] ?? '') ?>" data-validation="required" required>
+                            <span id="address_line1Error" class="text-danger small" style="display:none;"></span>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Address Line 2</label>
@@ -191,17 +202,20 @@ $profilePhoto = $user['profile_photo'] ?? 'https://ui-avatars.com/api/?name=' . 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">City</label>
-                                <input type="text" name="city" class="form-control" value="<?= htmlspecialchars($address['city'] ?? '') ?>" required>
+                                <input type="text" name="city" class="form-control" value="<?= htmlspecialchars($address['city'] ?? '') ?>" data-validation="required alpha" required>
+                                <span id="cityError" class="text-danger small" style="display:none;"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">State</label>
-                                <input type="text" name="state" class="form-control" value="<?= htmlspecialchars($address['state'] ?? '') ?>" required>
+                                <input type="text" name="state" class="form-control" value="<?= htmlspecialchars($address['state'] ?? '') ?>" data-validation="required alpha" required>
+                                <span id="stateError" class="text-danger small" style="display:none;"></span>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label">Postal Code</label>
-                                <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($address['postal_code'] ?? '') ?>" required>
+                                <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($address['postal_code'] ?? '') ?>" data-validation="required pincode" required>
+                                <span id="postal_codeError" class="text-danger small" style="display:none;"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Country</label>
@@ -243,3 +257,4 @@ function previewAndSubmit(input) {
 $content = ob_get_clean();
 include_once("layout.php");
 ?>
+<script src="js/validate.js"></script>
